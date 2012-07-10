@@ -1,0 +1,13 @@
+## Interface: 40100
+
+## Title: PhanxBot
+## Notes: Does stuff for you.
+
+## Author: Phanx
+## X-Email: addons@phanx.net
+
+## OptionalDeps: PhanxConfigWidgets
+
+## SavedVariables: PhanxBotDB
+
+PhanxBot.lua
