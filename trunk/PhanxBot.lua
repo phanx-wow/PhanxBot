@@ -10,17 +10,19 @@ local summonTime = -1
 local L = setmetatable({ }, { __index = function(t, k) t[k] = k return k end })
 
 local function echo(message, ...)
-	if ... then
-		message = message:format(...)
+	if ... and strmatch(message, "%%[dfqsx%d%.]") then
+		print("|cffffcc00PhanxBot:|r ", format(message, ...))
+	else
+		print("|cffffcc00PhanxBot:|r ", message, ...)
 	end
-	print("|cffffcc00PhanxBot:|r " .. message)
 end
 
 local function debug(message, ...)
-	if ... then
-		message = message:format(...)
+	if ... and strmatch(message, "%%[dfqsx%d%.]") then
+		print("|cffff3333PhanxBot:|r ", format(message, ...))
+	else
+		print("|cffff3333PhanxBot:|r ", message, ...)
 	end
-	print("|cffff3333PhanxBot:|r " .. message)
 end
 
 ------------------------------------------------------------------------
@@ -119,13 +121,11 @@ local function IsFriend(name)
 	if UnitIsInMyGuild(name) then
 		return true
 	end
-
 	for i = 1, GetNumFriends() do
 		if GetFriendInfo(i) == name then
 			return true
 		end
 	end
-
 	for i = 1, select(2, BNGetNumFriends()) do
 		for j = 1, BNGetNumFriendToons(i) do
 			local _, toonName, client, realm = BNGetFriendToonInfo(i, j)
@@ -140,10 +140,9 @@ end
 --	Decline arena team and guild creation petitions
 
 function PhanxBot:PETITION_SHOW()
-	local type, _, _, _, sender, isMine = GetPetitionInfo()
+	local petitionType, _, _, _, originator, isOriginator = GetPetitionInfo()
 	-- debug("PETITION_SHOW from " .. sender)
-
-	if not isMine and db[type] then
+	if not isOriginator and db[petitionType] then
 		ClosePetition()
 	end
 end
@@ -153,7 +152,6 @@ end
 
 function PhanxBot:ARENA_TEAM_INVITE_REQUEST(sender)
 	-- debug("ARENA_TEAM_INVITE_REQUEST from " .. sender)
-
 	DeclineArenaTeam()
 end
 
@@ -162,7 +160,6 @@ end
 
 function PhanxBot:DUEL_REQUESTED(sender)
 	-- debug("DUEL_REQUESTED from " .. sender)
-
 	CancelDuel()
 	StaticPopup_Hide("DUEL_REQUESTED")
 end
@@ -176,17 +173,21 @@ function PhanxBot:PARTY_INVITE_REQUEST(sender)
 		AcceptGroup()
 	else
 		SendWho("n-\"" .. sender .. "\"")
-		UIParent:GetScript("OnEvent")(UIParent, "PARTY_INVITE_REQUEST", sender)
+		UIParent_OnEvent(UIParent, "PARTY_INVITE_REQUEST", sender)
 	end
 end
 
 ------------------------------------------------------------------------
 --	Loot bind-on-pickup items while ungrouped
 
+function PhanxBot:CONFIRM_LOOT_ROLL(id, rollType)
+end
+
+-- LOOT_BIND
+-- CONFIRM_LOOT_ROLL
 function PhanxBot:LOOT_BIND_CONFIRM(slot)
 	-- debug("LOOT_BIND_CONFIRM for slot " .. slot)
-
-	if GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0 then
+	if GetNumGroupMembers() == 0 then
 		ConfirmLootSlot(slot)
 		StaticPopup_Hide("LOOT_BIND")
 	end
@@ -197,11 +198,9 @@ end
 
 function PhanxBot:PLAYER_REGEN_DISABLED()
 	-- debug("PLAYER_REGEN_DISABLED")
-
 	if db.nameplates then
 		SetCVar("nameplateShowEnemies", 1)
 	end
-
 	if summonPending then
 		self:StopSummonDelayTimer()
 	end
@@ -209,11 +208,9 @@ end
 
 function PhanxBot:PLAYER_REGEN_ENABLED()
 	-- debug("PLAYER_REGEN_ENABLED")
-
 	if db.nameplates then
 		SetCVar("nameplateShowEnemies", 0)
 	end
-
 	if summonPending then
 		self:StartSummonDelayTimer()
 	end
@@ -233,12 +230,10 @@ end
 
 local function FormatMoney(value)
 	value = abs(tonumber(value))
-
 	if value > 10000 then
 		local g = floor(abs(value / 10000))
 		local s = floor(abs(mod(value / 100, 100)))
 		local c = abs(mod(value, 100))
-
 		if c > 0 then
 			return "|cffffffff"..g.."|r|cffffd700g|r |cffffffff"..s.."|r|cffc7c7cfs|r |cffffffff"..c.."|r|cffeda55fc|r"
 		elseif s > 0 then
@@ -249,7 +244,6 @@ local function FormatMoney(value)
 	elseif value > 100 then
 		local s = floor(abs(mod(value / 100, 100)))
 		local c = abs(mod(value, 100))
-
 		if c > 0 then
 			return "|cffffffff"..s.."|r|cffc7c7cfs|r |cffffffff"..c.."|r|cffeda55fc|r"
 		else
@@ -262,9 +256,9 @@ end
 
 function PhanxBot:MERCHANT_SHOW()
 	-- debug("MERCHANT_SHOW")
-	if IsShiftKeyDown() then return end
+	local shift = IsShiftKeyDown()
 
-	if db.sell then
+	if db.sell and not shift then
 		if not hooked then
 			hooksecurefunc("SetTooltipMoney", UpdateProfit)
 			hooked = true
@@ -288,22 +282,27 @@ function PhanxBot:MERCHANT_SHOW()
 	end
 
 	if db.repair and CanMerchantRepair() then
-		local cost = GetRepairAllCost()
-		if cost > 0 then
-			local money = GetMoney()
-			local guildmoney = GetGuildBankWithdrawMoney()
-			if guildmoney == -1 then
-				guildmoney = GetGuildBankMoney()
-			end
-
-			if db.repairFromGuild and guildmoney >= cost and IsInGuild() then
-				RepairAllItems(1)
-				echo("Repaired all items for %s from guild bank funds.", FormatMoney(cost))
-			elseif db.repairFromGuild and IsInGuild() then
-				echo("Insufficient guild bank funds to repair! Hold Shift to repair anyway.")
-			elseif money > cost then
+		local repairAllCost, canRepair = GetRepairAllCost()
+		if canRepair and repairAllCost > 0 then
+			if db.repairFromGuild and CanGuildBankRepair() and not shift then
+				local amount = GetGuildBankWithdrawMoney()
+				local guildBankMoney = GetGuildBankMoney()
+				if amount == -1 then
+					amount = guildBankMoney
+				else
+					amount = min(amount, guildBankMoney)
+				end
+				if amount > repairAllCost then
+					RepairAllItems(1)
+					echo("Repaired all items for %s from guild bank funds.", FormatMoney(repairAllCost))
+					return
+				else
+					echo("Insufficient guild bank funds to repair! Hold Shift to repair anyway.")
+				end
+			elseif GetMoney() > repairAllCost then
 				RepairAllItems()
-				echo("Repaired all items for %s.", FormatMoney(cost))
+				echo("Repaired all items for %s.", FormatMoney(repairAllCost))
+				return
 			else
 				echo("Insufficient funds to repair!")
 			end
@@ -316,12 +315,10 @@ end
 
 function PhanxBot:RESURRECT_REQUEST(sender)
 	-- debug("RESURRECT_REQUEST from " .. sender)
-
 	local _, class = UnitClass(sender)
 	if class and class == "DRUID" and UnitAffectingCombat(sender) and not db.resurrectInCombat then
 		return
 	end
-
 	AcceptResurrect()
 	StaticPopup_Hide("RESURRECT_NO_SICKNESS")
 end
@@ -353,7 +350,6 @@ function PhanxBot:AcceptSummon()
 	else
 		self:Print("Summon expired!")
 	end
-
 	self:CancelSummon()
 end
 
