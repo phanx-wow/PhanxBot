@@ -1,6 +1,8 @@
 --[[--------------------------------------------------------------------
 	PhanxBot
 	Reduces interface tedium by doing stuff for you.
+	Copyright (c) 2008-2012 Phanx. All rights reserved.
+	See the accompanying LICENSE file for more information.
 ----------------------------------------------------------------------]]
 
 local PHANXBOT, PhanxBotNS = ...

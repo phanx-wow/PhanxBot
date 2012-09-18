@@ -7,10 +7,11 @@
 ## Author: Phanx
 ## X-Email: addons@phanx.net
 ## X-Copyright: Copyright (c) 2008-2012 Phanx. All rights reserved.
-## X-License: See the accompanying LICENSE file for details.
+## X-License: See the accompanying LICENSE file for license terms.
 
 ## OptionalDeps: PhanxConfigWidgets
 
 ## SavedVariables: PhanxBotDB
 
-PhanxBot.lua
+Core.lua
+Options.lua
