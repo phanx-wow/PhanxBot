@@ -12,6 +12,7 @@ local summonPending
 local summonTime = -1
 
 local L = setmetatable({}, { __index = function(t, k) t[k] = k return k end })
+PhanxBotNS.L = L
 
 ------------------------------------------------------------------------
 
@@ -433,7 +434,7 @@ end
 --	Toggle nameplates on while in combat
 
 function PhanxBot:PLAYER_REGEN_DISABLED(event)
-	self:Debug(event)
+	--self:Debug(event)
 	if db.showNameplatesInCombat then
 		SetCVar("nameplateShowEnemies", 1)
 	end
@@ -443,7 +444,7 @@ function PhanxBot:PLAYER_REGEN_DISABLED(event)
 end
 
 function PhanxBot:PLAYER_REGEN_ENABLED(event)
-	self:Debug(event)
+	--self:Debug(event)
 	if db.showNameplatesInCombat then
 		SetCVar("nameplateShowEnemies", 0)
 	end
