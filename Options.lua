@@ -6,13 +6,13 @@
 ----------------------------------------------------------------------]]
 
 local PHANXBOT, PhanxBotNS = ...
-local PhanxBot = PhanxBotNS.core
 
-local optionsPanel = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
-optionsPanel.name = "PhanxBot"
-optionsPanel:Hide()
-optionsPanel:SetScript("OnShow", function(self)
+local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHANXBOT, nil, function(self)
+	local L = PhanxBotNS.L
 	local db = PhanxBotDB
+
+	local PhanxBot = PhanxBotNS.core
+	PhanxBot.optionsPanel = self
 
 	local title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
@@ -126,8 +126,9 @@ optionsPanel:SetScript("OnShow", function(self)
 			key = "showNameplatesInCombat",
 			name = L["Show nameplates in combat"],
 			desc = L["Automatically toggle enemy nameplates on when entering combat, and off when leaving combat."],
-		}
+		},
 	}
+	self.options = options
 
 	local function SetOption(self, value)
 		if self.option.key then
@@ -191,9 +192,6 @@ optionsPanel:SetScript("OnShow", function(self)
 			end
 		end
 	end
-	self.refresh()
-
-	self:SetScript("OnShow", nil)
 end)
 
 InterfaceOptions_AddCategory(optionsPanel)
@@ -203,5 +201,3 @@ SLASH_PHANXBOT2 = "/pbot"
 SlashCmdList.PHANXBOT = function()
 	InterfaceOptionsFrame_OpenToCategory(optionsPanel)
 end
-
-PhanxBot.optionsPanel = optionsPanel
