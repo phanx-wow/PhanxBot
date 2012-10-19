@@ -66,6 +66,8 @@ function PhanxBot:ADDON_LOADED(event, addon)
 
 		sellJunk = true,				-- Sell junk items at vendors
 
+		skipGossip = true,				-- Skip gossips if there's only one option
+
 		filterTrainers = true,			-- Hide unavailable skills at trainers
 		showNameplatesInCombat = false,	-- Toggle nameplates on while in combat
 	}
@@ -134,6 +136,10 @@ function PhanxBot:PLAYER_LOGIN()
 
 	if db.repair or db.sellJunk then
 		self:RegisterEvent("MERCHANT_SHOW")
+	end
+
+	if db.skipGossip then
+		self:RegisterEvent("GOSSIP_SHOW")
 	end
 
 	if db.showNameplatesInCombat then
@@ -426,6 +432,21 @@ function PhanxBot:MERCHANT_SHOW(event)
 			else
 				self:Print("Insufficient funds to repair!")
 			end
+		end
+	end
+end
+
+------------------------------------------------------------------------
+--	Skip gossips when there's only one option
+
+function PhanxBot:GOSSIP_SHOW(event)
+	if IsShiftKeyDown() then return end
+
+	local _, instance = GetInstanceInfo()
+	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
+		local _, type = GetGossipOptions()
+		if type == "gossip" then
+			SelectGossipOption(1)
 		end
 	end
 end

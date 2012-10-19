@@ -118,6 +118,11 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 			desc = L["Sell gray-quality items when interacting with a vendor."],
 		},
 		{
+			key = "skipGossip",
+			name = L["Skip gossip"],
+			desc = L["Skip NPC gossip options if there's only one choice."],
+		},
+		{
 			key = "filterTrainers",
 			name = L["Filter trainers"],
 			desc = L["Hide unavailable and already known skills at trainers by default."],
@@ -125,7 +130,7 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 		{
 			key = "showNameplatesInCombat",
 			name = L["Show nameplates in combat"],
-			desc = L["Automatically toggle enemy nameplates on when entering combat, and off when leaving combat."],
+			desc = L["Toggle enemy nameplates on when entering combat, and off when leaving combat."],
 		},
 	}
 	self.options = options
@@ -193,8 +198,6 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 		end
 	end
 end)
-
-InterfaceOptions_AddCategory(optionsPanel)
 
 SLASH_PHANXBOT1 = "/bot"
 SLASH_PHANXBOT2 = "/pbot"
