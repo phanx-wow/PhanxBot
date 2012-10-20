@@ -179,7 +179,7 @@ end
 --	Accept group invitations from friends
 
 function PhanxBot:PARTY_INVITE_REQUEST(event, sender)
-	self:Debug(event, sender)
+	--self:Debug(event, sender)
 	if IsFriend(sender) then
 		AcceptGroup()
 	else
@@ -192,9 +192,9 @@ end
 --	Accept resurrections
 
 function PhanxBot:RESURRECT_REQUEST(event, sender)
-	self:Debug(event, sender)
+	--self:Debug(event, sender)
 	local _, class = UnitClass(sender)
-	if class and class == "DRUID" and UnitAffectingCombat(sender) and not db.acceptResurrectionsInCombat then
+	if class == "DRUID" and UnitAffectingCombat(sender) and not db.acceptResurrectionsInCombat then
 		return
 	end
 	AcceptResurrect()
@@ -381,7 +381,7 @@ local function FormatMoney(value)
 end
 
 function PhanxBot:MERCHANT_SHOW(event)
-	self:Debug(event)
+	--self:Debug(event)
 	local shift = IsShiftKeyDown()
 
 	if db.sellJunk and not shift then
@@ -439,13 +439,17 @@ end
 ------------------------------------------------------------------------
 --	Skip gossips when there's only one option
 
+local gossipSeen = {}
+
 function PhanxBot:GOSSIP_SHOW(event)
+	--self:Debug(event)
 	if IsShiftKeyDown() then return end
 
 	local _, instance = GetInstanceInfo()
 	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
-		local _, type = GetGossipOptions()
-		if type == "gossip" then
+		local text, type = GetGossipOptions()
+		if type == "gossip" and (not gossipSeen[text] or GetTime() - gossipSeen[text] > 0.5) then
+			gossipSeen[text] = GetTime()
 			SelectGossipOption(1)
 		end
 	end
