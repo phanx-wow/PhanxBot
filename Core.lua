@@ -9,7 +9,6 @@ local PHANXBOT, PhanxBotNS = ...
 
 local db
 local summonPending
-local summonTime = -1
 
 local L = setmetatable({}, { __index = function(t, k) t[k] = k return k end })
 PhanxBotNS.L = L
@@ -205,13 +204,14 @@ end
 --	Accept summons
 
 do
+	local summonTime = -1
 	local counter = 0
 
 	local summonTimer = CreateFrame("Frame")
 	summonTimer:Hide()
 	summonTimer:SetScript("OnUpdate", function(self, elapsed)
 		counter = counter + elapsed
-		if counter > db.acceptSummonsDelay then
+		if counter > db.summonDelay then
 			PhanxBot:AcceptSummon()
 		end
 	end)
@@ -241,7 +241,7 @@ do
 	function PhanxBot:AcceptSummon()
 		if GetTime() - summonTime < 120 then
 			ConfirmSummon()
-			StaticPopupHide("CONFIRM_SUMMON")
+			StaticPopup_Hide("CONFIRM_SUMMON")
 		else
 			self:Print("Summon expired!")
 		end
@@ -250,12 +250,12 @@ do
 
 	function PhanxBot:CONFIRM_SUMMON(event)
 		self:Debug(event)
-		self:Print("Accepting summon in %d seconds...", SUMMON_DELAY)
+		self:Print("Accepting summon in %d seconds...", db.summonDelay)
 
 		summonTime = GetTime()
 		summonPending = true
 
-		self:StartSummonCountdown()
+		self:StartSummonDelayTimer()
 
 		self:RegisterEvent("PLAYER_REGEN_DISABLED")
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
