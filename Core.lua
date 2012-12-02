@@ -271,13 +271,13 @@ end
 --	Confirm rolls
 
 function PhanxBot:CONFIRM_DISENCHANT_ROLL(event, id, rollType)
-	self:Debug(event, id, rollType)
+	--self:Debug(event, id, rollType)
 	ConfirmLootRoll(id, rollType)
 	StaticPopup_Hide("CONFIRM_LOOT_ROLL")
 end
 
 function PhanxBot:CONFIRM_LOOT_ROLL(event, id, rollType)
-	self:Debug(event, id, rollType)
+	--self:Debug(event, id, rollType)
 	if (rollType == 1 and db.confirmNeed) or (rollType == 2 and db.confirmGreed) then
 		ConfirmLootRoll(id, rollType)
 		StaticPopup_Hide("CONFIRM_LOOT_ROLL")
@@ -288,7 +288,7 @@ end
 --	Decline arena team invitations
 
 function PhanxBot:ARENA_TEAM_INVITE_REQUEST(event, sender)
-	self:Debug(event, sender)
+	--self:Debug(event, sender)
 	DeclineArenaTeam()
 end
 
@@ -297,7 +297,7 @@ end
 
 function PhanxBot:PETITION_SHOW(event)
 	local petitionType, _, _, _, sender, isSender = GetPetitionInfo()
-	self:Debug(event, petitionType, sender, isSender)
+	--self:Debug(event, petitionType, sender, isSender)
 	if not isSender and ((petitionType == "arena" and db.declineArenaTeams) or (petitionType == "guild" and db.declineGuilds)) then
 		ClosePetition()
 	end
@@ -310,7 +310,7 @@ local duelCount = {}
 
 function PhanxBot:DUEL_REQUESTED(event, sender)
 	duelCount[sender] = (duelCount[sender] or 0) + 1
-	self:Debug(event, sender, duelCount)
+	--self:Debug(event, sender, duelCount)
 	CancelDuel()
 	StaticPopup_Hide("DUEL_REQUESTED")
 end
@@ -332,7 +332,7 @@ do
 	end)
 
 	function PhanxBot:LOOT_BIND_CONFIRM(event, slot)
-		self:Debug(event, slot, GetLootSlotLink(slot))
+		--self:Debug(event, slot, GetLootSlotLink(slot))
 		local group = IsInGroup()
 		if not loot[slot] and ((group and db.lootBoPInGroup) or (not group and db.lootBoP)) then
 			loot[slot] = true
@@ -345,11 +345,12 @@ end
 ------------------------------------------------------------------------
 --	Repair equipment and sell junk items at vendors
 
-local hooked
-local profit = 0
+local hooked, junks, profit
+
 local tooltip = CreateFrame("GameTooltip", "PhanxBotTooltip", nil, "GameTooltipTemplate")
 local function UpdateProfit(frame, money)
 	if frame == tooltip and MerchantFrame:IsShown() then
+		junks = junks + 1
 		profit = profit + money
 	end
 end
@@ -389,7 +390,7 @@ function PhanxBot:MERCHANT_SHOW(event)
 			hooksecurefunc("SetTooltipMoney", UpdateProfit)
 			hooked = true
 		end
-		profit = 0
+		junks, profit = 0, 0
 		for bag = 0, 4 do
 			for slot = 0, GetContainerNumSlots(bag) do
 				local link = GetContainerItemLink(bag, slot)
@@ -403,7 +404,7 @@ function PhanxBot:MERCHANT_SHOW(event)
 			end
 		end
 		if profit > 0 then
-			self:Print("Sold all junk for %s.", FormatMoney(profit))
+			self:Print("Sold %d junk items for %s.", junks, FormatMoney(profit))
 		end
 	end
 
@@ -482,7 +483,7 @@ end
 --	Hide unavailable skills at trainers
 
 function PhanxBot:TRAINER_SHOW(event)
-	self:Debug(event)
+	--self:Debug(event)
 	SetTrainerServiceTypeFilter("unavailable", 0)
 	SetTrainerServiceTypeFilter("used", 0)
 end
