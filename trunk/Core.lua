@@ -345,11 +345,12 @@ end
 ------------------------------------------------------------------------
 --	Repair equipment and sell junk items at vendors
 
-local hooked
-local profit = 0
+local hooked, junks, profit
+
 local tooltip = CreateFrame("GameTooltip", "PhanxBotTooltip", nil, "GameTooltipTemplate")
 local function UpdateProfit(frame, money)
 	if frame == tooltip and MerchantFrame:IsShown() then
+		junks = junks + 1
 		profit = profit + money
 	end
 end
@@ -389,7 +390,7 @@ function PhanxBot:MERCHANT_SHOW(event)
 			hooksecurefunc("SetTooltipMoney", UpdateProfit)
 			hooked = true
 		end
-		profit = 0
+		junks, profit = 0, 0
 		for bag = 0, 4 do
 			for slot = 0, GetContainerNumSlots(bag) do
 				local link = GetContainerItemLink(bag, slot)
@@ -403,7 +404,7 @@ function PhanxBot:MERCHANT_SHOW(event)
 			end
 		end
 		if profit > 0 then
-			self:Print("Sold all junk for %s.", FormatMoney(profit))
+			self:Print("Sold %d junk items for %s.", junks, FormatMoney(profit))
 		end
 	end
 
