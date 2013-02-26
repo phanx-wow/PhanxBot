@@ -150,14 +150,11 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 
 		local widget
 		if not option.type then
-			widget = self:CreateCheckbox(option.name)
-			widget.desc = option.desc
-			widget.OnClick = SetOption
+			widget = self:CreateCheckbox(option.name, option.desc)
 		elseif option.type == "range" then
-			widget = self:CreateSlider(option.name, option.min, option.max, option.step, option.percent)
-			widget.desc = option.desc
-			widget.OnValueChanged = SetOption
+			widget = self:CreateSlider(option.name, option.desc, option.min, option.max, option.step, option.percent)
 		end
+		widget.OnValueChanged = SetOption
 		widget.option = option
 		option.widget = widget
 
@@ -181,19 +178,10 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 	self.refresh = function()
 		for i = 1, #options do
 			local option = options[i]
-
-			local value
-			if options[i].get then
-				value = options[i].get()
+			if option.get then
+				option.widget:SetValue(option.get())
 			else
-				value = db[options[i].key]
-			end
-
-			local widget = options[i].widget
-			if widget.SetValue then
-				widget:SetValue(value)
-			elseif widget.SetChecked then
-				widget:SetChecked(value)
+				option.widget:SetValue(db[option.key])
 			end
 		end
 	end
