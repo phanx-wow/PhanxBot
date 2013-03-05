@@ -442,6 +442,18 @@ end
 
 local gossipSeen = {}
 
+local gossipToIgnore = {
+	["Grant me your assistance, Bloodseeker. [Klaxxi Augmentation]"] = true,
+	["Grant me your assistance, Dissector. [Klaxxi Enhancement]"] = true,
+	["Grant me your assistance, Iyyokuk. [Klaxxi Enhancement]"] = true,
+	["Grant me your assistance, Locust. [Klaxxi Augmentation]"] = true,
+	["Grant me your assistance, Malik. [Klaxxi Enhancement]"] = true,
+	["Grant me your assistance, Manipulator. [Klaxxi Augmentation]"] = true,
+	["Grant me your assistance, Prime. [Klaxxi Augmentation]"] = true,
+	["Grant me your assistance, Wind-Reaver. [Klaxxi Enhancement]"] = true,
+	["Please fly me to the Terrace of Gurthan"] = true,
+}
+
 function PhanxBot:GOSSIP_SHOW(event)
 	--self:Debug(event)
 	if IsShiftKeyDown() then return end
@@ -449,7 +461,7 @@ function PhanxBot:GOSSIP_SHOW(event)
 	local _, instance = GetInstanceInfo()
 	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
 		local text, type = GetGossipOptions()
-		if type == "gossip" and (not gossipSeen[text] or GetTime() - gossipSeen[text] > 0.5) then
+		if type == "gossip" and not gossipToIgnore[text] and (not gossipSeen[text] or GetTime() - gossipSeen[text] > 0.5) then
 			gossipSeen[text] = GetTime()
 			SelectGossipOption(1)
 		end
