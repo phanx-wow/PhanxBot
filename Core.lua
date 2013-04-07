@@ -453,6 +453,9 @@ local gossipToIgnore = {
 	["Grant me your assistance, Prime. [Klaxxi Augmentation]"] = true,
 	["Grant me your assistance, Wind-Reaver. [Klaxxi Enhancement]"] = true,
 	["Please fly me to the Terrace of Gurthan"] = true,
+	-- Outland
+	["Absolutely!  Send me to the Skyguard Outpost."] = true,
+	["Yes, I'd love a ride to Blackwind Landing."] = true,
 	-- Tillers
 	["What kind of gifts do you like?"] = true,
 }
