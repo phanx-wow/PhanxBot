@@ -298,7 +298,7 @@ end
 function PhanxBot:PETITION_SHOW(event)
 	local petitionType, _, _, _, sender, isSender = GetPetitionInfo()
 	--self:Debug(event, petitionType, sender, isSender)
-	if not isSender and ((petitionType == "arena" and db.declineArenaTeams) or (petitionType == "guild" and db.declineGuilds)) then
+	if not isSender and ((petitionType == "arena" and db.declineArenaTeams) or (petitionType == "guild" and GetAutoDeclineGuildInvites() == 1)) then
 		ClosePetition()
 	end
 end

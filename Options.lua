@@ -14,23 +14,7 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 	local PhanxBot = PhanxBotNS.core
 	PhanxBot.optionsPanel = self
 
-	local title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetPoint("TOPRIGHT", -16, -16)
-	title:SetJustifyH("LEFT")
-	title:SetText(self.name)
-
-	local notes = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	notes:SetHeight(32)
-	notes:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-	notes:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", 0, -9)
-	notes:SetNonSpaceWrap(true)
-	notes:SetJustifyH("LEFT")
-	notes:SetJustifyV("TOP")
-	notes:SetText(L["Use this panel to hide selected parts of the default UI."])
-
-	self.CreateCheckbox = LibStub("PhanxConfig-Checkbox").CreateCheckbox
-	self.CreateSlider = LibStub("PhanxConfig-Slider").CreateSlider
+	local title, notes = self:CreateHeader(self.name, L["Use this panel to hide selected parts of the default UI."])
 
 	local options = {
 		{
@@ -84,7 +68,6 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 			desc = L["Decline duel requests."],
 		},
 		{
-			key = "declineGuilds",
 			name = L["Decline guilds"],
 			desc = L["Decline invitations and petitions for guilds."],
 			get = function() return GetAutoDeclineGuildInvites() == 1 end,
@@ -136,10 +119,10 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 	self.options = options
 
 	local function SetOption(self, value)
-		if self.option.key then
-			db[self.option.key] = value
-		elseif self.option.set then
+		if self.option.set then
 			self.option.set(value)
+		elseif self.option.key then
+			db[self.option.key] = value
 		end
 		PhanxBot:UnregisterAllEvents()
 		PhanxBot:PLAYER_LOGIN()
