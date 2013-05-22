@@ -466,9 +466,9 @@ function PhanxBot:GOSSIP_SHOW(event)
 
 	local _, instance = GetInstanceInfo()
 	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
-		local text, type = GetGossipOptions()
-		if type == "gossip" and not gossipToIgnore[text] and (not gossipSeen[text] or GetTime() - gossipSeen[text] > 0.5) then
-			gossipSeen[text] = GetTime()
+		local gossipText, gossipType = GetGossipOptions()
+		if gossipType == "gossip" and not gossipToIgnore[gossipText] and GetTime() - (gossipSeen[gossipText] or 0) > 0.5 then
+			gossipSeen[gossipText] = GetTime()
 			SelectGossipOption(1)
 		end
 	end
