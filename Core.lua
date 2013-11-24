@@ -393,13 +393,10 @@ function PhanxBot:MERCHANT_SHOW(event)
 		junks, profit = 0, 0
 		for bag = 0, 4 do
 			for slot = 0, GetContainerNumSlots(bag) do
-				local link = GetContainerItemLink(bag, slot)
-				if link then
-					local _, _, q = GetItemInfo(link)
-					if q == 0 then
-						tooltip:SetBagItem(bag, slot)
-						UseContainerItem(bag, slot)
-					end
+				local _, _, locked, quality = GetContainerItemInfo(bag, slot)
+				if quality == 0 and not locked then
+					tooltip:SetBagItem(bag, slot)
+					UseContainerItem(bag, slot)
 				end
 			end
 		end
