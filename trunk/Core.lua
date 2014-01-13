@@ -5,33 +5,31 @@
 	See the accompanying LICENSE file for more information.
 ----------------------------------------------------------------------]]
 
-local PHANXBOT, PhanxBotNS = ...
+local ADDON, Addon = ...
+local L = Addon.L
 
 local db
 local summonPending
 
-local L = setmetatable({}, { __index = function(t, k) t[k] = k return k end })
-PhanxBotNS.L = L
+------------------------------------------------------------------------
+
+local Events = CreateFrame("Frame", ADDON)
+Events:RegisterEvent("ADDON_LOADED")
+Events:SetScript("OnEvent", function(self, event, ...) return Addon[event](Addon, event, ...) end)
+Addon.Events = Events
 
 ------------------------------------------------------------------------
 
-local PhanxBot = CreateFrame("Frame", "PhanxBox")
-PhanxBot:SetScript("OnEvent", function(self, event, ...) return self[event](self, event, ...) end)
-PhanxBot:RegisterEvent("ADDON_LOADED")
-PhanxBotNS.core = PhanxBot
-
-------------------------------------------------------------------------
-
-function PhanxBot:Debug(message, ...)
-	if ... and strmatch(message, "%%[dfqsx%d%.]") then
+function Addon:Debug(message, ...)
+	if ... and strmatch(message, "%%[$dfqsx%d%.]") then
 		print("|cffff3333PhanxBot:|r ", format(message, ...))
 	else
 		print("|cffff3333PhanxBot:|r ", message, ...)
 	end
 end
 
-function PhanxBot:Print(message, ...)
-	if ... and strmatch(message, "%%[dfqsx%d%.]") then
+function Addon:Print(message, ...)
+	if ... and strmatch(message, "%%[$dfqsx%d%.]") then
 		print("|cffffcc00PhanxBot:|r ", format(message, ...))
 	else
 		print("|cffffcc00PhanxBot:|r ", message, ...)
@@ -40,8 +38,8 @@ end
 
 ------------------------------------------------------------------------
 
-function PhanxBot:ADDON_LOADED(event, addon)
-	if addon ~= "PhanxBot" then return end
+function Addon:ADDON_LOADED(event, addon)
+	if addon ~= "Addon" then return end
 
 	self.defaults = {
 		acceptGroups = true,			-- Accept group invitations from friends
@@ -80,74 +78,74 @@ function PhanxBot:ADDON_LOADED(event, addon)
 		end
 	end
 
-	self:UnregisterEvent("ADDON_LOADED")
+	self.Events:UnregisterEvent("ADDON_LOADED")
 	self.ADDON_LOADED = nil
 
 	if IsLoggedIn() then
 		self:PLAYER_LOGIN()
 	else
-		self:RegisterEvent("PLAYER_LOGIN")
+		self.Events:RegisterEvent("PLAYER_LOGIN")
 	end
 end
 
 ------------------------------------------------------------------------
 
-function PhanxBot:PLAYER_LOGIN()
+function Addon:PLAYER_LOGIN()
 	if db.acceptGroups then
 		UIParent:UnregisterEvent("PARTY_INVITE_REQUEST")
-		self:RegisterEvent("PARTY_INVITE_REQUEST")
+		self.Events:RegisterEvent("PARTY_INVITE_REQUEST")
 	else
 		UIParent:RegisterEvent("PARTY_INVITE_REQUEST")
 	end
 
 	if db.acceptResurrections then
-		self:RegisterEvent("RESURRECT_REQUEST")
+		self.Events:RegisterEvent("RESURRECT_REQUEST")
 	end
 
 	if db.acceptSummons then
-		self:RegisterEvent("CONFIRM_SUMMON")
+		self.Events:RegisterEvent("CONFIRM_SUMMON")
 	end
 
 	if db.confirmDisenchant then
-		self:RegisterEvent("CONFIRM_DISENCHANT_ROLL")
+		self.Events:RegisterEvent("CONFIRM_DISENCHANT_ROLL")
 	end
 
 	if db.confirmGreed or db.confirmNeed then
-		self:RegisterEvent("CONFIRM_LOOT_ROLL")
+		self.Events:RegisterEvent("CONFIRM_LOOT_ROLL")
 	end
 
 	if db.declineArenaTeams then
-		self:RegisterEvent("ARENA_TEAM_INVITE_REQUEST")
-		self:RegisterEvent("PETITION_SHOW")
+		self.Events:RegisterEvent("ARENA_TEAM_INVITE_REQUEST")
+		self.Events:RegisterEvent("PETITION_SHOW")
 	end
 
 	if db.declineDuels then
-		self:RegisterEvent("DUEL_REQUESTED")
+		self.Events:RegisterEvent("DUEL_REQUESTED")
 	end
 
 	if GetAutoDeclineGuildInvites() == 1 then
-		self:RegisterEvent("PETITION_SHOW")
+		self.Events:RegisterEvent("PETITION_SHOW")
 	end
 
 	if db.lootBoP then
-		self:RegisterEvent("LOOT_BIND_CONFIRM")
+		self.Events:RegisterEvent("LOOT_BIND_CONFIRM")
 	end
 
 	if db.repair or db.sellJunk then
-		self:RegisterEvent("MERCHANT_SHOW")
+		self.Events:RegisterEvent("MERCHANT_SHOW")
 	end
 
 	if db.skipGossip then
-		self:RegisterEvent("GOSSIP_SHOW")
+		self.Events:RegisterEvent("GOSSIP_SHOW")
 	end
 
 	if db.showNameplatesInCombat then
-		self:RegisterEvent("PLAYER_REGEN_DISABLED")
-		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+		self.Events:RegisterEvent("PLAYER_REGEN_DISABLED")
+		self.Events:RegisterEvent("PLAYER_REGEN_ENABLED")
 	end
 
 	if db.filterTrainers then
-		self:RegisterEvent("TRAINER_SHOW")
+		self.Events:RegisterEvent("TRAINER_SHOW")
 	end
 end
 
@@ -177,7 +175,7 @@ end
 ------------------------------------------------------------------------
 --	Accept group invitations from friends
 
-function PhanxBot:PARTY_INVITE_REQUEST(event, sender)
+function Addon:PARTY_INVITE_REQUEST(event, sender)
 	--self:Debug(event, sender)
 	if IsFriend(sender) then
 		AcceptGroup()
@@ -190,7 +188,7 @@ end
 ------------------------------------------------------------------------
 --	Accept resurrections
 
-function PhanxBot:RESURRECT_REQUEST(event, sender)
+function Addon:RESURRECT_REQUEST(event, sender)
 	--self:Debug(event, sender)
 	local _, class = UnitClass(sender)
 	if class == "DRUID" and UnitAffectingCombat(sender) and not db.acceptResurrectionsInCombat then
@@ -212,33 +210,33 @@ do
 	summonTimer:SetScript("OnUpdate", function(self, elapsed)
 		counter = counter + elapsed
 		if counter > db.summonDelay then
-			PhanxBot:AcceptSummon()
+			Addon:AcceptSummon()
 		end
 	end)
 
-	function PhanxBot:StartSummonDelayTimer()
+	function Addon:StartSummonDelayTimer()
 		counter = 0
 		summonTimer:Show()
 	end
 
-	function PhanxBot:StopSummonDelayTimer()
+	function Addon:StopSummonDelayTimer()
 		summonTimer:Hide()
 	end
 
-	function PhanxBot:CancelSummon()
+	function Addon:CancelSummon()
 		self:StopSummonDelayTimer()
 
 		if not db.showNameplatesInCombat then
-			self:UnregisterEvent("PLAYER_REGEN_DISABLED")
-			self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+			self.Events:UnregisterEvent("PLAYER_REGEN_DISABLED")
+			self.Events:UnregisterEvent("PLAYER_REGEN_ENABLED")
 		end
-		self:UnregisterEvent("PLAYER_DEAD")
+		self.Events:UnregisterEvent("PLAYER_DEAD")
 
 		summonTime = -1
 		summonPending = false
 	end
 
-	function PhanxBot:AcceptSummon()
+	function Addon:AcceptSummon()
 		if GetTime() - summonTime < 120 then
 			ConfirmSummon()
 			StaticPopup_Hide("CONFIRM_SUMMON")
@@ -248,7 +246,7 @@ do
 		self:CancelSummon()
 	end
 
-	function PhanxBot:CONFIRM_SUMMON(event)
+	function Addon:CONFIRM_SUMMON(event)
 		self:Debug(event)
 		self:Print("Accepting summon in %d seconds...", db.summonDelay)
 
@@ -257,12 +255,12 @@ do
 
 		self:StartSummonDelayTimer()
 
-		self:RegisterEvent("PLAYER_REGEN_DISABLED")
-		self:RegisterEvent("PLAYER_REGEN_ENABLED")
-		self:RegisterEvent("PLAYER_DEAD")
+		self.Events:RegisterEvent("PLAYER_REGEN_DISABLED")
+		self.Events:RegisterEvent("PLAYER_REGEN_ENABLED")
+		self.Events:RegisterEvent("PLAYER_DEAD")
 	end
 
-	function PhanxBot:PLAYER_DEAD()
+	function Addon:PLAYER_DEAD()
 		self:CancelSummon()
 	end
 end
@@ -270,13 +268,13 @@ end
 ------------------------------------------------------------------------
 --	Confirm rolls
 
-function PhanxBot:CONFIRM_DISENCHANT_ROLL(event, id, rollType)
+function Addon:CONFIRM_DISENCHANT_ROLL(event, id, rollType)
 	--self:Debug(event, id, rollType)
 	ConfirmLootRoll(id, rollType)
 	StaticPopup_Hide("CONFIRM_LOOT_ROLL")
 end
 
-function PhanxBot:CONFIRM_LOOT_ROLL(event, id, rollType)
+function Addon:CONFIRM_LOOT_ROLL(event, id, rollType)
 	--self:Debug(event, id, rollType)
 	if (rollType == 1 and db.confirmNeed) or (rollType == 2 and db.confirmGreed) then
 		ConfirmLootRoll(id, rollType)
@@ -287,7 +285,7 @@ end
 ------------------------------------------------------------------------
 --	Decline arena team invitations
 
-function PhanxBot:ARENA_TEAM_INVITE_REQUEST(event, sender)
+function Addon:ARENA_TEAM_INVITE_REQUEST(event, sender)
 	--self:Debug(event, sender)
 	DeclineArenaTeam()
 end
@@ -295,7 +293,7 @@ end
 ------------------------------------------------------------------------
 --	Decline arena team petitions and guild petitions
 
-function PhanxBot:PETITION_SHOW(event)
+function Addon:PETITION_SHOW(event)
 	local petitionType, _, _, _, sender, isSender = GetPetitionInfo()
 	--self:Debug(event, petitionType, sender, isSender)
 	if not isSender and ((petitionType == "arena" and db.declineArenaTeams) or (petitionType == "guild" and GetAutoDeclineGuildInvites() == 1)) then
@@ -308,7 +306,7 @@ end
 
 local duelCount = {}
 
-function PhanxBot:DUEL_REQUESTED(event, sender)
+function Addon:DUEL_REQUESTED(event, sender)
 	duelCount[sender] = (duelCount[sender] or 0) + 1
 	--self:Debug(event, sender, duelCount)
 	CancelDuel()
@@ -331,7 +329,7 @@ do
 		end
 	end)
 
-	function PhanxBot:LOOT_BIND_CONFIRM(event, slot)
+	function Addon:LOOT_BIND_CONFIRM(event, slot)
 		--self:Debug(event, slot, GetLootSlotLink(slot))
 		local group = IsInGroup()
 		if not loot[slot] and ((group and db.lootBoPInGroup) or (not group and db.lootBoP)) then
@@ -381,7 +379,7 @@ local function FormatMoney(value)
 	end
 end
 
-function PhanxBot:MERCHANT_SHOW(event)
+function Addon:MERCHANT_SHOW(event)
 	--self:Debug(event)
 	local shift = IsShiftKeyDown()
 
@@ -457,7 +455,7 @@ local gossipToIgnore = {
 	["What kind of gifts do you like?"] = true,
 }
 
-function PhanxBot:GOSSIP_SHOW(event)
+function Addon:GOSSIP_SHOW(event)
 	--self:Debug(event)
 	if IsShiftKeyDown() then return end
 
@@ -474,7 +472,7 @@ end
 ------------------------------------------------------------------------
 --	Toggle nameplates on while in combat
 
-function PhanxBot:PLAYER_REGEN_DISABLED(event)
+function Addon:PLAYER_REGEN_DISABLED(event)
 	--self:Debug(event)
 	if db.showNameplatesInCombat then
 		SetCVar("nameplateShowEnemies", 1)
@@ -484,7 +482,7 @@ function PhanxBot:PLAYER_REGEN_DISABLED(event)
 	end
 end
 
-function PhanxBot:PLAYER_REGEN_ENABLED(event)
+function Addon:PLAYER_REGEN_ENABLED(event)
 	--self:Debug(event)
 	if db.showNameplatesInCombat then
 		SetCVar("nameplateShowEnemies", 0)
@@ -497,7 +495,7 @@ end
 ------------------------------------------------------------------------
 --	Hide unavailable skills at trainers
 
-function PhanxBot:TRAINER_SHOW(event)
+function Addon:TRAINER_SHOW(event)
 	--self:Debug(event)
 	SetTrainerServiceTypeFilter("unavailable", 0)
 	SetTrainerServiceTypeFilter("used", 0)
