@@ -1,5 +1,5 @@
 ## Interface: 50400
-## Version: 5.4.1.wowi:revision
+## Version: 5.4.2.wowi:revision
 
 ## Title: PhanxBot
 ## Notes: Does stuff for you.
@@ -10,7 +10,6 @@
 ## X-License: See the accompanying LICENSE file for license terms.
 
 ## OptionalDeps: PhanxConfigWidgets
-
 ## SavedVariables: PhanxBotDB
 
 Libs\LibStub\LibStub.lua
@@ -20,5 +19,6 @@ Libs\PhanxConfig-Header\PhanxConfig-Header.lua
 Libs\PhanxConfig-OptionsPanel\PhanxConfig-OptionsPanel.lua
 Libs\PhanxConfig-Slider\PhanxConfig-Slider.lua
 
+Localization.lua
 Core.lua
 Options.lua

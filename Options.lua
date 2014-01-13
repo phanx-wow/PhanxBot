@@ -5,16 +5,13 @@
 	See the accompanying LICENSE file for more information.
 ----------------------------------------------------------------------]]
 
-local PHANXBOT, PhanxBotNS = ...
+local ADDON, Addon = ...
 
-local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHANXBOT, nil, function(self)
-	local L = PhanxBotNS.L
+Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(self)
+	local L = Addon.L
 	local db = PhanxBotDB
 
-	local PhanxBot = PhanxBotNS.core
-	PhanxBot.optionsPanel = self
-
-	local title, notes = self:CreateHeader(self.name, L["Use this panel to hide selected parts of the default UI."])
+	local title, notes = self:CreateHeader(ADDON, GetAddOnMetadata(ADDON, "Notes"))
 
 	local options = {
 		{
@@ -124,8 +121,8 @@ local optionsPanel = LibStub("PhanxConfig-OptionsPanel").CreateOptionsPanel(PHAN
 		elseif self.option.key then
 			db[self.option.key] = value
 		end
-		PhanxBot:UnregisterAllEvents()
-		PhanxBot:PLAYER_LOGIN()
+		PhanxBot.Events:UnregisterAllEvents()
+		PhanxBot.Events:PLAYER_LOGIN()
 	end
 
 	for i = 1, #options do
@@ -172,6 +169,6 @@ end)
 
 SLASH_PHANXBOT1 = "/bot"
 SLASH_PHANXBOT2 = "/pbot"
-SlashCmdList.PHANXBOT = function()
-	InterfaceOptionsFrame_OpenToCategory(optionsPanel)
+SlashCmdList.ADDON = function()
+	InterfaceOptionsFrame_OpenToCategory(Addon.Options)
 end
