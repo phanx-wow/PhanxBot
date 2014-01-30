@@ -115,14 +115,17 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 	}
 	self.options = options
 
+	local loading
+
 	local function SetOption(self, value)
+		if loading then return end
 		if self.option.set then
 			self.option.set(value)
 		elseif self.option.key then
 			db[self.option.key] = value
 		end
-		PhanxBot.Events:UnregisterAllEvents()
-		PhanxBot.Events:PLAYER_LOGIN()
+		Addon.Events:UnregisterAllEvents()
+		Addon:PLAYER_LOGIN()
 	end
 
 	for i = 1, #options do
@@ -156,6 +159,7 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 	end
 
 	self.refresh = function()
+		loading = true
 		for i = 1, #options do
 			local option = options[i]
 			if option.get then
@@ -164,11 +168,12 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 				option.widget:SetValue(db[option.key])
 			end
 		end
+		loading = nil
 	end
 end)
 
 SLASH_PHANXBOT1 = "/bot"
 SLASH_PHANXBOT2 = "/pbot"
-SlashCmdList.ADDON = function()
+SlashCmdList.PHANXBOT = function()
 	InterfaceOptionsFrame_OpenToCategory(Addon.Options)
 end
