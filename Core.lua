@@ -39,7 +39,7 @@ end
 ------------------------------------------------------------------------
 
 function Addon:ADDON_LOADED(event, addon)
-	if addon ~= "Addon" then return end
+	if addon ~= ADDON then return end
 
 	self.defaults = {
 		acceptGroups = true,			-- Accept group invitations from friends
@@ -69,9 +69,8 @@ function Addon:ADDON_LOADED(event, addon)
 		showNameplatesInCombat = false,	-- Toggle nameplates on while in combat
 	}
 
-	PhanxBotDB = PhanxBotDB or { }
-	db = PhanxBotDB
-
+	db = PhanxBotDB or {}
+	PhanxBotDB = db
 	for k, v in pairs(self.defaults) do
 		if type(db[k]) ~= type(v) then
 			db[k] = v

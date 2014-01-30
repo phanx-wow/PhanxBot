@@ -91,7 +91,7 @@ elseif LOCALE == "xxXX" then
 ------------------------------------------------------------------------
 end
 
-setmetatable({}, { __index = function(t, k)
+Addon.L = setmetatable(L, { __index = function(t, k)
 	local v = tostring(k)
 	t[k] = v
 	return v end
