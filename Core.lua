@@ -370,82 +370,54 @@ end
 ------------------------------------------------------------------------
 --	Repair equipment and sell junk items at vendors
 
-do
-	local function FormatMoney(value)
-		-- coin icons with _AMOUNT_TEXTURE, text with _AMOUNT_SYMBOL
-		local gold = floor(value / (COPPER_PER_SILVER * SILVER_PER_GOLD))
-		local silver = floor((value - (gold * COPPER_PER_SILVER * SILVER_PER_GOLD)) / COPPER_PER_SILVER)
-		local copper = value % COPPER_PER_SILVER
-		local text = ""
-		if gold > 0 then
-			text = format("%d|cffffd700%s|r", gold, GOLD_AMOUNT_TEXTURE)
+function Addon:MERCHANT_SHOW(event)
+	--self:Debug(event)
+	if IsShiftKeyDown() then return end
+
+	if db.sellJunk then
+		local junks, profit = 0, 0
+		for bag = 0, 4 do
+			for slot = 0, GetContainerNumSlots(bag) do
+				local _, quantity, locked, _, _, _, link = GetContainerItemInfo(bag, slot)
+				if link and not locked then
+					local _, _, quality, _, _, _, _, _, _, _, value = GetItemInfo(link)
+					if quality == ITEM_QUALITY_POOR then
+						junks = junks + 1
+						profit = profit + value
+						UseContainerItem(bag, slot)
+					end
+				end
+			end
 		end
-		if silver > 0 then
-			text = text .. format(" %d|cffc7c7cf%s|r", silver, SILVER_AMOUNT_TEXTURE)
+		if profit > 0 then
+			self:Print("Sold %d junk items for %s.", junks, GetCoinTextureString(profit))
 		end
-		if copper > 0 or value == 0 then
-			text = text .. format(" %d|cffeda55f%s|r", copper, COPPER_AMOUNT_TEXTURE)
-		end
-		--[[
-		if value >= 10000 then
-			return format("|cffffd700%d|r%s |cffc7c7cf%d|r%s %d%s", abs(value / 10000), GOLD_AMOUNT_TEXTURE, abs(mod(value / 100, 100)), SILVER_AMOUNT_TEXTURE, abs(mod(value, 100)), COPPER_AMOUNT_TEXTURE)
-		elseif value >= 100 then
-			return format("|cffc7c7cf%d|r%s %d%s", abs(mod(value / 100, 100)), SILVER_AMOUNT_TEXTURE, abs(mod(value, 100)), COPPER_AMOUNT_TEXTURE)
-		else
-			return format("%d%s", abs(mod(value, 100)), COPPER_AMOUNT_TEXTURE)
-		end
-		]]
 	end
 
-	function Addon:MERCHANT_SHOW(event)
-		--self:Debug(event)
-		if IsShiftKeyDown() then return end
-
-		if db.sellJunk then
-			local junks, profit = 0, 0
-			for bag = 0, 4 do
-				for slot = 0, GetContainerNumSlots(bag) do
-					local _, quantity, locked, _, _, _, link = GetContainerItemInfo(bag, slot)
-					if link and not locked then
-						local _, _, quality, _, _, _, _, _, _, _, value = GetItemInfo(link)
-						if quality == ITEM_QUALITY_POOR then
-							junks = junks + 1
-							profit = profit + value
-							UseContainerItem(bag, slot)
-						end
-					end
+	if db.repair and CanMerchantRepair() then
+		local repairAllCost, canRepair = GetRepairAllCost()
+		if canRepair and repairAllCost > 0 then
+			if db.repairFromGuild and CanGuildBankRepair() then
+				local amount = GetGuildBankWithdrawMoney()
+				local guildBankMoney = GetGuildBankMoney()
+				if amount == -1 then
+					amount = guildBankMoney
+				else
+					amount = min(amount, guildBankMoney)
 				end
-			end
-			if profit > 0 then
-				self:Print("Sold %d junk items for %s.", junks, FormatMoney(profit))
-			end
-		end
-
-		if db.repair and CanMerchantRepair() then
-			local repairAllCost, canRepair = GetRepairAllCost()
-			if canRepair and repairAllCost > 0 then
-				if db.repairFromGuild and CanGuildBankRepair() then
-					local amount = GetGuildBankWithdrawMoney()
-					local guildBankMoney = GetGuildBankMoney()
-					if amount == -1 then
-						amount = guildBankMoney
-					else
-						amount = min(amount, guildBankMoney)
-					end
-					if amount > repairAllCost then
-						RepairAllItems(1)
-						self:Print("Repaired all items for %s from guild bank funds.", FormatMoney(repairAllCost))
-						return
-					else
-						self:Print("Insufficient guild bank funds to repair!")
-					end
-				elseif GetMoney() > repairAllCost then
-					RepairAllItems()
-					self:Print("Repaired all items for %s.", FormatMoney(repairAllCost))
+				if amount > repairAllCost then
+					RepairAllItems(1)
+					self:Print("Repaired all items for %s from guild bank funds.", GetCoinTextureString(repairAllCost))
 					return
 				else
-					self:Print("Insufficient funds to repair!")
+					self:Print("Insufficient guild bank funds to repair!")
 				end
+			elseif GetMoney() > repairAllCost then
+				RepairAllItems()
+				self:Print("Repaired all items for %s.", GetCoinTextureString(repairAllCost))
+				return
+			else
+				self:Print("Insufficient funds to repair!")
 			end
 		end
 	end
@@ -454,25 +426,23 @@ end
 ------------------------------------------------------------------------
 --	Skip gossips when there's only one option
 
-do
-	local seen = {}
+local gossipLastSeen = {}
 
-	function Addon:GOSSIP_SHOW(event)
-		--self:Debug(event)
-		if IsShiftKeyDown() then return end
+function Addon:GOSSIP_SHOW(event)
+	--self:Debug(event)
+	if IsShiftKeyDown() then return end
 
-		local _, instance = GetInstanceInfo()
-		if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
-			local gossipText, gossipType = GetGossipOptions()
-			if gossipType == "gossip" and not ignoreGossip[gossipText] and GetTime() - (seen[gossipText] or 0) > 0.5 then
-				--print("selecting gossip \"" .. gossipText .. "\"")
-				seen[gossipText] = GetTime()
-				if dismountForGossip[gossipText] then
-					--print("dismounting")
-					Dismount()
-				end
-				SelectGossipOption(1)
+	local _, instance = GetInstanceInfo()
+	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
+		local gossipText, gossipType = GetGossipOptions()
+		if gossipType == "gossip" and not ignoreGossip[gossipText] and GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5 then
+			--print("selecting gossip \"" .. gossipText .. "\"")
+			gossipLastSeen[gossipText] = GetTime()
+			if dismountForGossip[gossipText] then
+				--print("dismounting")
+				Dismount()
 			end
+			SelectGossipOption(1)
 		end
 	end
 end
