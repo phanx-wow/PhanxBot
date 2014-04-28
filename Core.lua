@@ -11,6 +11,34 @@ local L = Addon.L
 local db
 local summonPending
 
+local ignoreGossip = {
+	-- Klaxxi
+	[L["Grant me your assistance, Bloodseeker. [Klaxxi Augmentation]"]] = true,
+	[L["Grant me your assistance, Dissector. [Klaxxi Enhancement]"]] = true,
+	[L["Grant me your assistance, Iyyokuk. [Klaxxi Enhancement]"]] = true,
+	[L["Grant me your assistance, Locust. [Klaxxi Augmentation]"]] = true,
+	[L["Grant me your assistance, Malik. [Klaxxi Enhancement]"]] = true,
+	[L["Grant me your assistance, Manipulator. [Klaxxi Augmentation]"]] = true,
+	[L["Grant me your assistance, Prime. [Klaxxi Augmentation]"]] = true,
+	[L["Grant me your assistance, Wind-Reaver. [Klaxxi Enhancement]"]] = true,
+	[L["Please fly me to the Terrace of Gurthan"]] = true,
+	-- Outland
+	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
+	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
+	-- Tillers
+	[L["What kind of gifts do you like?"]] = true,
+}
+
+local dismountForGossip = {
+	-- Pandaria
+	[L["Please fly me to the Terrace of Gurthan"]] = true,
+	-- Northrend
+	[L["I need a bat to intercept the Alliance reinforcements."]] = true, -- CHECK ENGLISH!
+	-- Outland
+	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
+	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
+}
+
 ------------------------------------------------------------------------
 
 local Events = CreateFrame("Frame", ADDON)
@@ -21,18 +49,18 @@ Addon.Events = Events
 ------------------------------------------------------------------------
 
 function Addon:Debug(message, ...)
-	if ... and strmatch(message, "%%[$dfqsx%d%.]") then
-		print("|cffff3333PhanxBot:|r ", format(message, ...))
+	if (...) and strmatch(message, "%%[$dfqsx%d%.]") then
+		print("|cffff3333PhanxBot:|r", format(message, ...))
 	else
-		print("|cffff3333PhanxBot:|r ", message, ...)
+		print("|cffff3333PhanxBot:|r", message, ...)
 	end
 end
 
 function Addon:Print(message, ...)
-	if ... and strmatch(message, "%%[$dfqsx%d%.]") then
-		print("|cffffcc00PhanxBot:|r ", format(message, ...))
+	if (...) and strmatch(message, "%%[$dfqsx%d%.]") then
+		print("|cffffcc00PhanxBot:|r", format(message, ...))
 	else
-		print("|cffffcc00PhanxBot:|r ", message, ...)
+		print("|cffffcc00PhanxBot:|r", message, ...)
 	end
 end
 
@@ -303,10 +331,10 @@ end
 ------------------------------------------------------------------------
 --	Decline duel requests
 
-local duelCount = {}
+--local duelCount = {}
 
 function Addon:DUEL_REQUESTED(event, sender)
-	duelCount[sender] = (duelCount[sender] or 0) + 1
+	--duelCount[sender] = (duelCount[sender] or 0) + 1
 	--self:Debug(event, sender, duelCount)
 	CancelDuel()
 	StaticPopup_Hide("DUEL_REQUESTED")
@@ -342,90 +370,82 @@ end
 ------------------------------------------------------------------------
 --	Repair equipment and sell junk items at vendors
 
-local hooked, junks, profit
-
-local tooltip = CreateFrame("GameTooltip", "PhanxBotTooltip", nil, "GameTooltipTemplate")
-local function UpdateProfit(frame, money)
-	if frame == tooltip and MerchantFrame:IsShown() then
-		junks = junks + 1
-		profit = profit + money
-	end
-end
-
-local function FormatMoney(value)
-	value = abs(tonumber(value))
-	if value > 10000 then
-		local g = floor(abs(value / 10000))
-		local s = floor(abs(mod(value / 100, 100)))
-		local c = abs(mod(value, 100))
-		if c > 0 then
-			return "|cffffffff"..g.."|r|cffffd700g|r |cffffffff"..s.."|r|cffc7c7cfs|r |cffffffff"..c.."|r|cffeda55fc|r"
-		elseif s > 0 then
-			return "|cffffffff"..g.."|r|cffffd700g|r |cffffffff"..s.."|r"
+do
+	local function FormatMoney(value)
+		-- coin icons with _AMOUNT_TEXTURE, text with _AMOUNT_SYMBOL
+		local gold = floor(value / (COPPER_PER_SILVER * SILVER_PER_GOLD))
+		local silver = floor((value - (gold * COPPER_PER_SILVER * SILVER_PER_GOLD)) / COPPER_PER_SILVER)
+		local copper = value % COPPER_PER_SILVER
+		local text = ""
+		if gold > 0 then
+			text = format("%d|cffffd700%s|r", gold, GOLD_AMOUNT_TEXTURE)
+		end
+		if silver > 0 then
+			text = text .. format(" %d|cffc7c7cf%s|r", silver, SILVER_AMOUNT_TEXTURE)
+		end
+		if copper > 0 or value == 0 then
+			text = text .. format(" %d|cffeda55f%s|r", copper, COPPER_AMOUNT_TEXTURE)
+		end
+		--[[
+		if value >= 10000 then
+			return format("|cffffd700%d|r%s |cffc7c7cf%d|r%s %d%s", abs(value / 10000), GOLD_AMOUNT_TEXTURE, abs(mod(value / 100, 100)), SILVER_AMOUNT_TEXTURE, abs(mod(value, 100)), COPPER_AMOUNT_TEXTURE)
+		elseif value >= 100 then
+			return format("|cffc7c7cf%d|r%s %d%s", abs(mod(value / 100, 100)), SILVER_AMOUNT_TEXTURE, abs(mod(value, 100)), COPPER_AMOUNT_TEXTURE)
 		else
-			return "|cffffffff"..g.."|r|cffffd700g|r"
+			return format("%d%s", abs(mod(value, 100)), COPPER_AMOUNT_TEXTURE)
 		end
-	elseif value > 100 then
-		local s = floor(abs(mod(value / 100, 100)))
-		local c = abs(mod(value, 100))
-		if c > 0 then
-			return "|cffffffff"..s.."|r|cffc7c7cfs|r |cffffffff"..c.."|r|cffeda55fc|r"
-		else
-			return "|cffffffff"..s.."|r|cffc7c7cfs|r"
-		end
-	else
-		return "|cffffffff"..value.."|r|cffeda55fc|r"
+		]]
 	end
-end
 
-function Addon:MERCHANT_SHOW(event)
-	--self:Debug(event)
-	local shift = IsShiftKeyDown()
+	function Addon:MERCHANT_SHOW(event)
+		--self:Debug(event)
+		if IsShiftKeyDown() then return end
 
-	if db.sellJunk and not shift then
-		if not hooked then
-			hooksecurefunc("SetTooltipMoney", UpdateProfit)
-			hooked = true
-		end
-		junks, profit = 0, 0
-		for bag = 0, 4 do
-			for slot = 0, GetContainerNumSlots(bag) do
-				local _, _, locked, quality = GetContainerItemInfo(bag, slot)
-				if quality == 0 and not locked then
-					tooltip:SetBagItem(bag, slot)
-					UseContainerItem(bag, slot)
+		if db.sellJunk then
+			local junks, profit = 0, 0
+			for bag = 0, 4 do
+				for slot = 0, GetContainerNumSlots(bag) do
+					local _, quantity, locked, _, _, _, link = GetContainerItemInfo(bag, slot)
+					if link and not locked then
+						local _, _, quality, _, _, _, _, _, _, _, value = GetItemInfo(link)
+						if quality == ITEM_QUALITY_POOR then
+							junks = junks + 1
+							profit = profit + value
+							UseContainerItem(bag, slot)
+						end
+					end
 				end
 			end
+			if profit > 0 then
+				self:Print("Sold %d junk items for %s.", junks, FormatMoney(profit))
+			end
 		end
-		if profit > 0 then
-			self:Print("Sold %d junk items for %s.", junks, FormatMoney(profit))
-		end
-	end
 
-	if db.repair and CanMerchantRepair() then
-		local repairAllCost, canRepair = GetRepairAllCost()
-		if canRepair and repairAllCost > 0 then
-			if db.repairFromGuild and CanGuildBankRepair() and not shift then
-				local amount = GetGuildBankWithdrawMoney()
-				local guildBankMoney = GetGuildBankMoney()
-				if amount == -1 then
-					amount = guildBankMoney
-				else
-					amount = min(amount, guildBankMoney)
-				end
-				if amount > repairAllCost then
-					RepairAllItems(1)
-					self:Print("Repaired all items for %s from guild bank funds.", FormatMoney(repairAllCost))
+		if db.repair and CanMerchantRepair() then
+			local repairAllCost, canRepair = GetRepairAllCost()
+			if canRepair and repairAllCost > 0 then
+				if db.repairFromGuild and CanGuildBankRepair() then
+					local amount = GetGuildBankWithdrawMoney()
+					local guildBankMoney = GetGuildBankMoney()
+					if amount == -1 then
+						amount = guildBankMoney
+					else
+						amount = min(amount, guildBankMoney)
+					end
+					if amount > repairAllCost then
+						RepairAllItems(1)
+						self:Print("Repaired all items for %s from guild bank funds.", FormatMoney(repairAllCost))
+						return
+					else
+						self:Print("Insufficient guild bank funds to repair!")
+					end
+				elseif GetMoney() > repairAllCost then
+					RepairAllItems()
+					self:Print("Repaired all items for %s.", FormatMoney(repairAllCost))
 					return
 				else
-					self:Print("Insufficient guild bank funds to repair! Hold Shift to repair anyway.")
+					self:Print("Insufficient funds to repair!")
 				end
-			elseif GetMoney() > repairAllCost then
-				RepairAllItems()
-				self:Print("Repaired all items for %s.", FormatMoney(repairAllCost))
-				return
-			else
-				self:Print("Insufficient funds to repair!")
 			end
 		end
 	end
@@ -434,38 +454,41 @@ end
 ------------------------------------------------------------------------
 --	Skip gossips when there's only one option
 
-local gossipSeen = {}
+do
+	local seen = {}
 
-local gossipToIgnore = {
-	-- Klaxxi
-	["Grant me your assistance, Bloodseeker. [Klaxxi Augmentation]"] = true,
-	["Grant me your assistance, Dissector. [Klaxxi Enhancement]"] = true,
-	["Grant me your assistance, Iyyokuk. [Klaxxi Enhancement]"] = true,
-	["Grant me your assistance, Locust. [Klaxxi Augmentation]"] = true,
-	["Grant me your assistance, Malik. [Klaxxi Enhancement]"] = true,
-	["Grant me your assistance, Manipulator. [Klaxxi Augmentation]"] = true,
-	["Grant me your assistance, Prime. [Klaxxi Augmentation]"] = true,
-	["Grant me your assistance, Wind-Reaver. [Klaxxi Enhancement]"] = true,
-	["Please fly me to the Terrace of Gurthan"] = true,
-	-- Outland
-	["Absolutely!  Send me to the Skyguard Outpost."] = true,
-	["Yes, I'd love a ride to Blackwind Landing."] = true,
-	-- Tillers
-	["What kind of gifts do you like?"] = true,
-}
+	function Addon:GOSSIP_SHOW(event)
+		--self:Debug(event)
+		if IsShiftKeyDown() then return end
 
-function Addon:GOSSIP_SHOW(event)
-	--self:Debug(event)
-	if IsShiftKeyDown() then return end
-
-	local _, instance = GetInstanceInfo()
-	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
-		local gossipText, gossipType = GetGossipOptions()
-		if gossipType == "gossip" and not gossipToIgnore[gossipText] and GetTime() - (gossipSeen[gossipText] or 0) > 0.5 then
-			gossipSeen[gossipText] = GetTime()
-			SelectGossipOption(1)
+		local _, instance = GetInstanceInfo()
+		if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
+			local gossipText, gossipType = GetGossipOptions()
+			if gossipType == "gossip" and not ignoreGossip[gossipText] and GetTime() - (seen[gossipText] or 0) > 0.5 then
+				--print("selecting gossip \"" .. gossipText .. "\"")
+				seen[gossipText] = GetTime()
+				if dismountForGossip[gossipText] then
+					--print("dismounting")
+					Dismount()
+				end
+				SelectGossipOption(1)
+			end
 		end
 	end
+end
+
+------------------------------------------------------------------------
+--	Dismount for transport-related gossip options
+
+local ClickGossip = GossipTitleButton_OnClick
+function GossipTitleButton_OnClick(self, button, down)
+	local gossipText = self:GetText()
+	--print("clicking gossip", self:GetID(), gossipText)
+	if dismountForGossip[gossipText] then
+		--print("dismounting")
+		Dismount()
+	end
+	ClickGossip(self, button, down)
 end
 
 ------------------------------------------------------------------------

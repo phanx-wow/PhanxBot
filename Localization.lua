@@ -12,6 +12,8 @@ local LOCALE = GetLocale()
 
 if LOCALE == "deDE" then
 
+	L["I need a bat to intercept the Alliance reinforcements."] = "Ich brauche eine Reitfledermaus, um die Verstärkung der Allianz abzufangen."
+
 	L["Accept groups"] = "Gruppen annehmen"
 	L["Accept group inviations from friends and guildmates."] = "Gruppeneinladungen von Freunde und Gildenmitglieder automatisch annehmen."
 	L["Accept resurrections"] = "Wiederbelebungen annehmen"
