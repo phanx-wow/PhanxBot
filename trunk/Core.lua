@@ -22,21 +22,30 @@ local ignoreGossip = {
 	[L["Grant me your assistance, Prime. [Klaxxi Augmentation]"]] = true,
 	[L["Grant me your assistance, Wind-Reaver. [Klaxxi Enhancement]"]] = true,
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
+	-- Tillers
+	[L["What kind of gifts do you like?"]] = true,
 	-- Outland
 	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
-	-- Tillers
-	[L["What kind of gifts do you like?"]] = true,
 }
 
 local dismountForGossip = {
 	-- Pandaria
+	[L["I am ready to go."]] = true, -- CHECK ENGLISH -- Jade Forest, Fei, for "Es geht voran"
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
+	[L["Send me to Dawn's Blossom."]] = true, -- CHECK ENGLISH
 	-- Northrend
-	[L["I need a bat to intercept the Alliance reinforcements."]] = true, -- CHECK ENGLISH!
+	[L["I need a bat to intercept the Alliance reinforcements."]] = true, -- CHECK ENGLISH
 	-- Outland
 	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
+	[L["I'm on a bombing mission for Forward Command To'arch.  I need a wyvern destroyer!"]] = true,
+	[L["Lend me a Windrider.  I'm going to Spinebreaker Post!"]] = true,
+	[L["Send me to the Abyssal Shelf!"]] = true,
+	[L["Send me to Thrallmar!"]] = true,
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
+	-- Isle of Quel'Danas
+	[L["I need to intercept the Dawnblade reinforcements."]] = true,
+	[L["Speaking of action, I've been ordered to undertake an air strike."]] = true,
 }
 
 ------------------------------------------------------------------------
