@@ -29,6 +29,7 @@ if LOCALE == "deDE" then
 	L["Send me to Dawn's Blossom."] = "Schickt mich nach Morgenblüte."
 -- Northrend
 	L["I need a bat to intercept the Alliance reinforcements."] = "Ich brauche eine Reitfledermaus, um die Verstärkung der Allianz abzufangen."
+	L["I am ready to fly to Sholazar Basin."] = "Ich bin bereit, ins Sholazarbecken zu fliegen."
 -- Outland
 	--L["Absolutely!  Send me to the Skyguard Outpost."] = ""
 	L["I'm on a bombing mission for Forward Command To'arch.  I need a wyvern destroyer!"] = "Ich habe einen Bomberauftrag von Vorpostenkommandant To'arch. Ich brauche einen Wyverzerstörer!"
