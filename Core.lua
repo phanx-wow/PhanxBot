@@ -24,6 +24,8 @@ local ignoreGossip = {
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
 	-- Tillers
 	[L["What kind of gifts do you like?"]] = true,
+	-- Northrend
+	[L["I am ready to fly to Sholazar Basin."]] = true, -- CHECK ENGLISH
 	-- Outland
 	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
@@ -35,6 +37,7 @@ local dismountForGossip = {
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
 	[L["Send me to Dawn's Blossom."]] = true, -- CHECK ENGLISH
 	-- Northrend
+	[L["I am ready to fly to Sholazar Basin."]] = true, -- CHECK ENGLISH
 	[L["I need a bat to intercept the Alliance reinforcements."]] = true, -- CHECK ENGLISH
 	-- Outland
 	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
