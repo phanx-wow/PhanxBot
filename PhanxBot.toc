@@ -1,5 +1,4 @@
-## Interface: 50400
-## Version: 5.4.2.wowi:revision
+## Interface: 60000
 
 ## Title: PhanxBot
 ## Notes: Does stuff for you.
@@ -7,9 +6,8 @@
 ## Author: Phanx
 ## X-Email: addons@phanx.net
 ## X-Copyright: Copyright (c) 2008-2014 Phanx. All rights reserved.
-## X-License: See the accompanying LICENSE file for license terms.
 
-## OptionalDeps: PhanxConfigWidgets
+## OptionalDeps: LibAboutPanel, PhanxConfigWidgets
 ## SavedVariables: PhanxBotDB
 
 Libs\LibStub\LibStub.lua

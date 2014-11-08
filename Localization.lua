@@ -1,8 +1,7 @@
 --[[--------------------------------------------------------------------
 	PhanxBot
 	Reduces interface tedium by doing stuff for you.
-	Copyright (c) 2008-2014 Phanx. All rights reserved.
-	See the accompanying LICENSE file for more information.
+	Copyright (c) 2008-2014 Phanx <addons@phanx.net>. All rights reserved.
 ----------------------------------------------------------------------]]
 
 local L, ADDON, Addon = {}, ...
