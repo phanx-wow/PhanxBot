@@ -392,7 +392,7 @@ function Addon:MERCHANT_SHOW(event)
 				local _, quantity, locked, _, _, _, link = GetContainerItemInfo(bag, slot)
 				if link and not locked then
 					local _, _, quality, _, _, _, _, _, _, _, value = GetItemInfo(link)
-					if quality == ITEM_QUALITY_POOR then
+					if quality == LE_ITEM_QUALITY_POOR then
 						junks = junks + 1
 						profit = profit + value
 						UseContainerItem(bag, slot)
