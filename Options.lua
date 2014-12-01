@@ -54,11 +54,6 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 			name = L["Confirm need rolls"],
 		},
 		{
-			key = "declineArenaTeams",
-			name = L["Decline arena teams"],
-			desc = L["Decline invitations and petitions for arena teams."],
-		},
-		{
 			key = "declineDuels",
 			name = L["Decline duels"],
 			desc = L["Decline duel requests."],

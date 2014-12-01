@@ -91,7 +91,6 @@ function Addon:ADDON_LOADED(event, addon)
 		confirmGreed = false,			-- Confirm greed rolls
 		confirmNeed = false,			-- Confirm need rolls
 
-		declineArenaTeams = false,		-- Decline arena team invitations
 		declineDuels = false,			-- Decline duel requests
 
 		lootBoP = false,				-- Loot bind-on-pickup items while ungrouped
@@ -150,11 +149,6 @@ function Addon:PLAYER_LOGIN()
 
 	if db.confirmGreed or db.confirmNeed then
 		self.Events:RegisterEvent("CONFIRM_LOOT_ROLL")
-	end
-
-	if db.declineArenaTeams then
-		self.Events:RegisterEvent("ARENA_TEAM_INVITE_REQUEST")
-		self.Events:RegisterEvent("PETITION_SHOW")
 	end
 
 	if db.declineDuels then
@@ -321,20 +315,13 @@ function Addon:CONFIRM_LOOT_ROLL(event, id, rollType)
 end
 
 ------------------------------------------------------------------------
---	Decline arena team invitations
-
-function Addon:ARENA_TEAM_INVITE_REQUEST(event, sender)
-	--self:Debug(event, sender)
-	DeclineArenaTeam()
-end
-
-------------------------------------------------------------------------
---	Decline arena team petitions and guild petitions
+--	Decline guild petitions
+-- TODO: is this covered by the built-in "decline guild invites" option?
 
 function Addon:PETITION_SHOW(event)
 	local petitionType, _, _, _, sender, isSender = GetPetitionInfo()
 	--self:Debug(event, petitionType, sender, isSender)
-	if not isSender and ((petitionType == "arena" and db.declineArenaTeams) or (petitionType == "guild" and GetAutoDeclineGuildInvites() == 1)) then
+	if not isSender and petitionType == "guild" and GetAutoDeclineGuildInvites() == 1 then
 		ClosePetition()
 	end
 end
