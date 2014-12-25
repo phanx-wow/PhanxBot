@@ -131,7 +131,7 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 		elseif option.type == "range" then
 			widget = self:CreateSlider(option.name, option.desc, option.min, option.max, option.step, option.percent)
 		end
-		widget.Callback = SetOption
+		widget.OnValueChanged = SetOption
 		widget.option = option
 		option.widget = widget
 
