@@ -92,6 +92,11 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 			desc = L["Sell gray-quality items when interacting with a vendor."],
 		},
 		{
+			key = "automateQuests",
+			name = L["Automate quests"],
+			desc = L["Automatically accept and turn in quests."],
+		},
+		{
 			key = "skipGossip",
 			name = L["Skip gossip"],
 			desc = L["Skip NPC gossip options if there's only one choice."],
@@ -122,6 +127,7 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 		Addon:PLAYER_LOGIN()
 	end
 
+	local breakpoint = ceil(#options / 2) + 1
 	for i = 1, #options do
 		local option = options[i]
 
@@ -135,13 +141,10 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 		widget.option = option
 		option.widget = widget
 
-		local y = -8
-		if i > 1 and options[i-1].type == "range" then
-			y = -16
-		end
+		local y = (i > 1 and options[i-1].type == "range") and -16 or -8
 		if i == 1 then
 			widget:SetPoint("TOPLEFT", notes, "BOTTOMLEFT", 0, y)
-		elseif i == 12 then
+		elseif i == breakpoint then
 			widget:SetPoint("TOPLEFT", notes, "BOTTOM", 8, y)
 		elseif option.parent == options[i-1].key then
 			widget:SetPoint("TOPLEFT", options[i-1].widget, "BOTTOMLEFT", 20, y)
@@ -161,6 +164,7 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 			else
 				option.widget:SetValue(db[option.key])
 			end
+			-- TODO: disable children if their parent is unchecked
 		end
 		loading = nil
 	end

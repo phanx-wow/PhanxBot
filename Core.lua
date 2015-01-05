@@ -8,6 +8,7 @@ local ADDON, Addon = ...
 local L = Addon.L
 
 local db
+local questChoicePending, questChoiceFinished
 local summonPending
 
 local ignoreGossip = {
@@ -30,10 +31,6 @@ local ignoreGossip = {
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
 }
 
-local selectMultiGossip = {
-	[L["Teleport me to the cannon."]] = true, -- CHECK ENGLISH -- Darkmoon Isle, Teleportologist Fozlebub
-}
-
 local dismountForGossip = {
 	-- Pandaria
 	[L["I am ready to go."]] = true, -- CHECK ENGLISH -- Jade Forest, Fei, for "Es geht voran"
@@ -53,6 +50,156 @@ local dismountForGossip = {
 	[L["I need to intercept the Dawnblade reinforcements."]] = true,
 	[L["Speaking of action, I've been ordered to undertake an air strike."]] = true,
 }
+
+local selectMultiGossip = {
+	[57850] = 1, -- Darkmoon Isle, Teleportologist Fozlebub, "Teleport me to the cannon."
+}
+
+local confirmGossipNPC = {
+	[57850] = true, -- Teleportologist Fozlebub
+	[55382] = true, -- Darkmoon Faire Mystic Mage (Horde)
+	[54334] = true, -- Darkmoon Faire Mystic Mage (Alliance)
+}
+
+local ignoreGossipNPC = {
+	-- Bodyguards
+	[86945] = true, -- Aeda Brightdawn (Horde)
+	[86933] = true, -- Vivianne (Horde)
+	[86927] = true, -- Delvar Ironfist (Alliance)
+	[86934] = true, -- Defender Illona (Alliance)
+	[86682] = true, -- Tormmok
+	[86964] = true, -- Leorajh
+	[86946] = true, -- Talonpriest Ishaal
+	-- Misc NPCs
+	[79740] = true, -- Warmaster Zog (Horde)
+	[79953] = true, -- Lieutenant Thorn (Alliance)
+}
+
+local ignoreQuest = {
+	-- Manual
+	[32296] = true, -- Treasures of the Thunder King
+	-- Suboptimal rewards: Blue Feather, Jade Cat, Lovely Apple, Marsh Lily, Ruby Shard
+	[30382] = true, [30419] = true, [30425] = true, [30388] = true, [30412] = true, [30437] = true, [30406] = true, [30431] = true,
+	[30399] = true, [30418] = true, [30387] = true, [30411] = true, [30436] = true, [30393] = true, [30405] = true, [30430] = true,
+	[30398] = true, [30189] = true, [30417] = true, [30423] = true, [30380] = true, [30410] = true, [30392] = true, [30429] = true,
+	[30401] = true, [30383] = true, [30426] = true, [30413] = true, [30438] = true, [30395] = true, [30407] = true, [30432] = true,
+	[30397] = true, [30160] = true, [30416] = true, [30422] = true, [30379] = true, [30434] = true, [30391] = true, [30403] = true,
+	-- Mutually exclusive: Work Order
+	[32642] = true, [32647] = true, [32645] = true, [32649] = true, [32653] = true, [32658] = true,
+	-- Mutually exclusive: Fiona's Caravan
+	[27560] = true, [27562] = true, [27555] = true, [27556] = true, [27558] = true, [27561] = true, [27557] = true, [27559] = true,
+	-- Mutually exclusive: Allegiance to the Aldor/Scryers
+	[10551] = true, [10552] = true,
+	-- Mutually exclusive: Little Orphan Kekek/Roo of the Wolvar/Oracles
+	[13927] = true, [13926] = true,
+	-- No reward: Return to the Abyssal Shelf (Alliance/Horde)
+	[10346] = true, [10347] = true,
+	-- Stuck on 5-minute flight: To Venomspite!
+	[12182] = true,
+	-- Profession specializations: Elixir/Potion/Transmutation Master, Goblin/Gnomish Engineering
+	[29481] = true, [29067] = true, [29482] = true,
+	[29475] = true, [29477] = true,
+}
+
+local ignoreQuestNPC = {
+	[88570] = true, -- Fate-Twister Tiklal
+	[87391] = true, -- Fate-Twister Seress
+}
+
+local repeatableQuestComplete = {
+	-- Replenishing the Pantry
+	[31535] = function() return GetItemCount(87557) >= 1 end, -- Bundle of Groceries
+	-- Seeds of Fear
+	[31603] = function() return GetItemCount(87903) >= 6 end, -- Dread Amber Shards
+}
+
+local cashRewards = {
+	-- Keys are strings instead of numbers since it's coming from an item link,
+	-- and this way saves a call to tonumber.
+	["45724"] = 100000,  --  10g: Champion's Purse
+	["64491"] = 2000000, -- 200g: Royal Reward
+}
+
+local function GetNPCID()
+	return tonumber(strmatch(UnitGUID("npc") or "", "Creature%-.-%-.-%-.-%-.-%-(.-)%-"))
+end
+
+local GetQuestName
+do
+	local tooltip
+	function GetQuestName(id)
+		if not tooltip then
+			tooltip = CreateFrame("GameTooltip")
+			tooltip.titleText = tooltip:CreateFontString(nil, "OVERLAY", "GameTooltipHeaderText")
+			tooltip:AddFontStrings(tooltip.titleText, tooltip:CreateFontString(nil, "OVERLAY", "GameTooltipHeaderText"))
+		end
+		tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+		tooltip:SetHyperlink("quest:" .. id)
+		local name = tooltip.titleText:GetText()
+		GameTooltip:Hide()
+		return name
+	end
+end
+
+local PopulateQuestNames
+do
+	local complete
+	local toPopulate = {
+		ignoreQuest,
+		repeatableQuestComplete,
+	}
+	function PopulateQuestNames()
+		if complete then return end
+		complete = true
+		for i = 1, #toPopulate do
+			local t = toPopulate[i]
+			for id, v in pairs(t) do
+				if type(id) == "number" then
+					local name = GetQuestName(id)
+					if name then
+						t[name] = v
+						t[id] = nil
+					else
+						complete = false
+					end
+				end
+			end
+		end
+	end
+end
+
+local function IsTrackingTrivial()
+	for i = 1, GetNumTrackingTypes() do
+		local name, _, active = GetTrackingInfo(i)
+		if name == MINIMAP_TRACKING_TRIVIAL_QUESTS then
+			return active
+		end
+	end
+end
+
+local IsFriend
+do
+	local myRealm = GetRealmName()
+	 function IsFriend(name)
+		if UnitIsInMyGuild(name) then
+			return true
+		end
+		for i = 1, GetNumFriends() do
+			if GetFriendInfo(i) == name then
+				return true
+			end
+		end
+		local _, numBNFriends = BNGetNumFriends()
+		for i = 1, numBNFriends do
+			for j = 1, BNGetNumFriendToons(i) do
+				local _, toonName, client, realm = BNGetFriendToonInfo(i, j)
+				if toonName == name and client == "WoW" and realm == myRealm then
+					return true
+				end
+			end
+		end
+	end
+end
 
 ------------------------------------------------------------------------
 
@@ -85,29 +232,23 @@ function Addon:ADDON_LOADED(event, addon)
 	if addon ~= ADDON then return end
 
 	self.defaults = {
-		acceptGroups = true,			-- Accept group invitations from friends
-		acceptResurrections = false,	-- Accept resurrections out of combat
+		acceptGroups = true,					-- Accept group invitations from friends
+		acceptResurrections = false,		-- Accept resurrections out of combat
 		acceptResurrectionstInCombat = false,	-- Accept resurrections in combat
-		acceptSummons = false,			-- Accept warlock and meeting stone summons
-		summonDelay = 45,				-- Wait this many seconds to accept summons
-
-		confirmDisenchant = false,		-- Confirm disenchant rolls
-		confirmGreed = false,			-- Confirm greed rolls
-		confirmNeed = false,			-- Confirm need rolls
-
-		declineDuels = false,			-- Decline duel requests
-
-		lootBoP = false,				-- Loot bind-on-pickup items while ungrouped
-		lootBoPInGroup = false,			-- Loot bind-on-pickup items in groups
-
-		repair = true,					-- Repair equipment at vendors
-		repairFromGuild = false,		-- Use guild funds to repair
-
-		sellJunk = true,				-- Sell junk items at vendors
-
-		skipGossip = true,				-- Skip gossips if there's only one option
-
-		filterTrainers = true,			-- Hide unavailable skills at trainers
+		acceptSummons = false,				-- Accept warlock and meeting stone summons
+		summonDelay = 45,						-- Wait this many seconds to accept summons
+		automateQuests = true,				-- Accept and turn in quests
+		confirmDisenchant = false,			-- Confirm disenchant rolls
+		confirmGreed = false,				-- Confirm greed rolls
+		confirmNeed = false,					-- Confirm need rolls
+		declineDuels = false,				-- Decline duel requests
+		lootBoP = false,						-- Loot bind-on-pickup items while ungrouped
+		lootBoPInGroup = false,				-- Loot bind-on-pickup items in groups
+		repair = true,							-- Repair equipment at vendors
+		repairFromGuild = false,			-- Use guild funds to repair
+		sellJunk = true,						-- Sell junk items at vendors
+		skipGossip = true,					-- Skip gossips if there's only one option
+		filterTrainers = true,				-- Hide unavailable skills at trainers
 		showNameplatesInCombat = false,	-- Toggle nameplates on while in combat
 	}
 
@@ -147,6 +288,22 @@ function Addon:PLAYER_LOGIN()
 		self.Events:RegisterEvent("CONFIRM_SUMMON")
 	end
 
+	if db.automateQuests then
+		PopulateQuestNames()
+		self.Events:RegisterEvent("QUEST_GREETING")
+		self.Events:RegisterEvent("QUEST_DETAIL")
+		self.Events:RegisterEvent("QUEST_ACCEPT_CONFIRM")
+		self.Events:RegisterEvent("QUEST_ACCEPTED")
+		self.Events:RegisterEvent("QUEST_PROGRESS")
+		self.Events:RegisterEvent("QUEST_ITEM_UPDATE")
+		self.Events:RegisterEvent("QUEST_COMPLETE")
+		self.Events:RegisterEvent("QUEST_FINISHED")
+		self.Events:RegisterEvent("QUEST_AUTOCOMPLETE")
+		QuestFrame:UnregisterEvent("QUEST_DETAIL")
+	else
+		QuestFrame:RegisterEvent("QUEST_DETAIL")
+	end
+
 	if db.confirmDisenchant then
 		self.Events:RegisterEvent("CONFIRM_DISENCHANT_ROLL")
 	end
@@ -171,8 +328,11 @@ function Addon:PLAYER_LOGIN()
 		self.Events:RegisterEvent("MERCHANT_SHOW")
 	end
 
-	if db.skipGossip then
+	if db.skipGossip or db.automateQuests then
 		self.Events:RegisterEvent("GOSSIP_SHOW")
+	end
+	if db.skipGossip then
+		self.Events:RegisterEvent("GOSSIP_CONFIRM")
 	end
 
 	if db.showNameplatesInCombat then
@@ -182,29 +342,6 @@ function Addon:PLAYER_LOGIN()
 
 	if db.filterTrainers then
 		self.Events:RegisterEvent("TRAINER_SHOW")
-	end
-end
-
-------------------------------------------------------------------------
-
-local function IsFriend(name)
-	if UnitIsInMyGuild(name) then
-		return true
-	end
-
-	for i = 1, GetNumFriends() do
-		if GetFriendInfo(i) == name then
-			return true
-		end
-	end
-
-	for i = 1, select(2, BNGetNumFriends()) do
-		for j = 1, BNGetNumFriendToons(i) do
-			local _, toonName, client, realm = BNGetFriendToonInfo(i, j)
-			if toonName == name and client == "WoW" and realm == GetRealmName() then
-				return true
-			end
-		end
 	end
 end
 
@@ -222,9 +359,168 @@ function Addon:PARTY_INVITE_REQUEST(event, sender)
 end
 
 ------------------------------------------------------------------------
+-- Accept and turn in quests
+
+local function StripText(text)
+	if not text then return "" end
+	text = gsub(text, "%[.*%]%s*","")
+	text = gsub(text, "|c%x%x%x%x%x%x%x%x(.+)|r","%1")
+	text = gsub(text, "(.+) %(.+%)", "%1")
+	return strtrim(text)
+end
+
+function Addon:QUEST_GREETING()
+	if HydraSettings then return end
+	--self:Debug("QUEST_GREETING")
+	if ignoreQuestNPC[GetNPCID()] or IsShiftKeyDown() then return end
+	-- Turn in complete quests:
+	if self.db.turnin then
+		for i = 1, GetNumActiveQuests() do
+			local title, complete = GetActiveTitle(i)
+			--self:Debug("Checking active quest:", title)
+			if complete and not ignoreQuest[StripText(title)] then
+				--self:Debug("Select!")
+				SelectActiveQuest(i)
+			end
+		end
+	end
+	-- Pick up available quests:
+	if self.db.accept then
+		for i = 1, GetNumAvailableQuests() do
+			local title = StripText(GetAvailableTitle(i))
+			--self:Debug("Checking available quest:", title)
+			if not ignoreQuest[title] and (not IsAvailableQuestTrivial(i) or IsTrackingTrivial()) then
+				--self:Debug("Select!")
+				SelectAvailableQuest(i)
+			end
+		end
+	end
+end
+
+function Addon:QUEST_DETAIL()
+	if HydraSettings then return end
+	--self:Debug("QUEST_DETAIL")
+	if IsShiftKeyDown() then return end
+
+	if not QuestGetAutoAccept() or not QuestIsFromAreaTrigger() then
+		-- QuestFrame:UnregisterEvent("QUEST_DETAIL")
+		--self:Debug("Passing to QuestFrame")
+		QuestFrame_OnEvent(QuestFrame, "QUEST_DETAIL")
+	end
+
+	local giver = UnitName("questnpc")
+	local item, _, _, _, minLevel = GetItemInfo(giver or "")
+	if not item or not minLevel or minLevel > 1 or (UnitLevel("player") - minLevel < GetQuestGreenRange()) or IsTrackingTrivial() then
+		-- No way to get the quest level from the item, so if the item
+		-- doesn't have a level requirement, we just have to take it.
+		--self:Debug("Accepting quest %q from %s", StripText(GetTitleText()), giver)
+		AcceptQuest()
+	end
+end
+
+function Addon:QUEST_ACCEPT_CONFIRM(event, giver, quest)
+	if HydraSettings then return end
+	--self:Debug("QUEST_ACCEPT_CONFIRM", giver, quest)
+	if IsShiftKeyDown() then return end
+	AcceptQuest()
+	--ConfirmAcceptQuest()
+	--StaticPopup_Hide("QUEST_ACCEPT")
+end
+
+function Addon:QUEST_ACCEPTED(event, id)
+	if HydraSettings then return end
+	--self:Debug("QUEST_ACCEPTED", id)
+	if QuestFrame:IsShown() and QuestGetAutoAccept() then
+		CloseQuest()
+	end
+	if not GetCVarBool("autoQuestWatch") or IsQuestWatched(id) or GetNumQuestWatches() >= MAX_WATCHABLE_QUESTS then return end
+	--self:Debug("Adding quest to tracker")
+	AddQuestWatch(id)
+end
+
+function Addon:QUEST_PROGRESS()
+	if HydraSettings then return end
+	--self:Debug("QUEST_PROGRESS")
+	if IsShiftKeyDown() or not IsQuestCompletable() then return end
+	--self:Debug("Completing quest", StripText(GetTitleText()))
+	CompleteQuest()
+end
+
+function Addon:QUEST_ITEM_UPDATE()
+	if HydraSettings then return end
+	--self:Debug("QUEST_ITEM_UPDATE", questChoicePending)
+	if questChoicePending then
+		self:QUEST_COMPLETE("QUEST_ITEM_UPDATE")
+	end
+end
+
+function Addon:QUEST_COMPLETE()
+	if HydraSettings then return end
+	if not questChoicePending then
+		--self:Debug("QUEST_COMPLETE")
+		if IsShiftKeyDown() then return end
+	end
+	local choices = GetNumQuestChoices()
+	if choices <= 1 then
+		--self:Debug("Completing quest", StripText(GetTitleText()), choices == 1 and "with only reward" or "with no reward")
+		GetQuestReward(1)
+	elseif choices > 1 then
+		--self:Debug("Quest has multiple rewards, not automating")
+		local bestValue, bestIndex = 0
+		for i = 1, choices do
+			local link = GetQuestItemLink("choice", i)
+			if link then
+				local _, _, _, _, _, _, _, _, _, _, value = GetItemInfo(link)
+				value = cashRewards[strmatch(link, "item:(%d+)")] or value or 0
+				if value > bestValue then
+					bestValue, bestIndex = value, i
+				end
+			else
+				questChoicePending = true
+				return GetQuestItemInfo("choice", i)
+			end
+		end
+		if bestIndex then
+			questChoiceFinished = true
+			QuestInfoItem_OnClick(QuestInfoRewardsFrame.RewardButtons[bestIndex])
+		end
+		QuestRewardScrollFrame:SetVerticalScroll(QuestRewardScrollFrame:GetVerticalScrollRange())
+	end
+end
+
+function Addon:QUEST_FINISHED()
+	if HydraSettings then return end
+	--self:Debug("QUEST_FINISHED")
+	if questChoiceFinished then
+		questChoicePending = false
+	end
+end
+
+function Addon:QUEST_AUTOCOMPLETE(event, id)
+	if HydraSettings then return end
+	--self:Debug("QUEST_AUTOCOMPLETE", id)
+	local index = GetQuestLogIndexByID(id)
+	if GetQuestLogIsAutoComplete(index) then
+		ShowQuestComplete(index)
+	end
+end
+
+--[[
+	local popups = GetNumAutoQuestPopups()
+	if popups == 0 then return end
+	for i = popups, 1, -1 do
+		local id, status = GetAutoQuestPopup(i)
+		if status == "COMPLETE" then
+			ShowQuestComplete(GetQuestLogIndexByID(id))
+		end
+	end
+]]
+
+------------------------------------------------------------------------
 --	Accept resurrections
 
 function Addon:RESURRECT_REQUEST(event, sender)
+	if HydraSettings then return end
 	--self:Debug(event, sender)
 	local _, class = UnitClass(sender)
 	if class == "DRUID" and UnitAffectingCombat(sender) and not db.acceptResurrectionsInCombat then
@@ -283,7 +579,8 @@ do
 	end
 
 	function Addon:CONFIRM_SUMMON(event)
-		self:Debug(event)
+		if HydraSettings then return end
+		--self:Debug(event)
 		self:Print("Accepting summon in %d seconds...", db.summonDelay)
 
 		summonTime = GetTime()
@@ -297,6 +594,8 @@ do
 	end
 
 	function Addon:PLAYER_DEAD()
+		if HydraSettings then return end
+		--self:Debug(event)
 		self:CancelSummon()
 	end
 end
@@ -333,10 +632,11 @@ end
 ------------------------------------------------------------------------
 --	Decline duel requests
 
---local duelCount = {}
+local duelCount = {}
 
 function Addon:DUEL_REQUESTED(event, sender)
-	--duelCount[sender] = (duelCount[sender] or 0) + 1
+	if HydraSettings then return end
+	duelCount[sender] = (duelCount[sender] or 0) + 1
 	--self:Debug(event, sender, duelCount)
 	CancelDuel()
 	StaticPopup_Hide("DUEL_REQUESTED")
@@ -373,6 +673,7 @@ end
 --	Repair equipment and sell junk items at vendors
 
 function Addon:MERCHANT_SHOW(event)
+	if HydraSettings then return end
 	--self:Debug(event)
 	if IsShiftKeyDown() then return end
 
@@ -426,7 +727,8 @@ function Addon:MERCHANT_SHOW(event)
 end
 
 ------------------------------------------------------------------------
---	Skip gossips when there's only one option
+-- Skip gossips when there's only one option
+-- Select quest gossips for pickup and turnin
 
 local gossipLastSeen = {}
 
@@ -434,28 +736,65 @@ function Addon:GOSSIP_SHOW(event)
 	--self:Debug(event)
 	if IsShiftKeyDown() then return end
 
-	local _, instance = GetInstanceInfo()
-	if instance == "raid" or GetNumGossipAvailableQuests() > 0 or GetNumGossipActiveQuests() then return end
-
-	local numGossipOptions = GetNumGossipOptions()
-	local pickIndex, gossipText, gossipType = 1, GetGossipOptions()
-	if numGossipOptions > 1 then
-		for i = 1, numGossipOptions() do
-			local checkText, checkType = select(i * 2 - 1, GetGossipOptions())
-			if selectMultiGossip[gossipText] then
-				pickIndex, gossipText, gossipType = i, checkText, checkType
-				break
+	if db.automateQuests and not HydraSettings then
+		-- Turn in complete quests:
+		for i = 1, GetNumGossipActiveQuests() do
+			local title, level, isLowLevel, isComplete, isLegendary = select(i * 5 - 4, GetGossipActiveQuests())
+			if isComplete and not ignoreQuest[title] then
+				--self:Debug("Turn in:", title)
+				return SelectGossipActiveQuest(i)
+			end
+		end
+		-- Pick up available quests:
+		for i = 1, GetNumGossipAvailableQuests() do
+			local title, level, isLowLevel, isDaily, isRepeatable, isLegendary = select(i * 6 - 5, GetGossipAvailableQuests())
+			--self:Debug(i, '"'..title..'"', isLowLevel, isRepeatable)
+			if not ignoreQuest[title] then
+				local go
+				if isRepeatable and repeatableQuestComplete[title] then
+					go = repeatableQuestComplete[title]()
+					--self:Debug("Repeatable", go)
+				else
+					go = not isLowLevel or IsTrackingTrivial()
+					--self:Debug("Accept", go)
+				end
+				if go then
+					--self:Debug("Go!")
+					return SelectGossipAvailableQuest(i)
+				end
 			end
 		end
 	end
-	if gossipType == "gossip" and not ignoreGossip[gossipText] and GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5 then
-		--print("selecting gossip \"" .. gossipText .. "\"")
+	
+	if not db.skipGossip then return end
+
+	-- Process other gossips:
+	local npcID = GetNPCID()
+	local _, instanceType = GetInstanceInfo()
+	--self:Debug(instanceType, ignoreGossipNPC[npcID], GetNumGossipAvailableQuests(), GetNumGossipActiveQuests(), selectMultiGossip[npcID])
+	if instanceType == "raid" or ignoreGossipNPC[npcID] or GetNumGossipAvailableQuests() > 0 or GetNumGossipActiveQuests() > 0 then return end
+
+	local pickIndex, gossipText, gossipType = selectMultiGossip[npcID], GetGossipOptions()
+	if not pickIndex and gossipType == "gossip" and not ignoreGossip[gossipText] and GetNumGossipOptions() == 1 and (GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5) then
+		pickIndex = 1
+	end
+	if pickIndex then
+		--self:Debug("Selecting gossip \"" .. gossipText .. "\"")
 		gossipLastSeen[gossipText] = GetTime()
 		if dismountForGossip[gossipText] then
-			--print("Dismounting")
+			--self:Debug("Dismounting")
 			Dismount()
 		end
 		SelectGossipOption(pickIndex)
+	end
+end
+
+function Addon:GOSSIP_CONFIRM(event, index)
+	local npcID = GetNPCID()
+	if npcID and confirmGossipNPC[npcID] then
+		--self:Debug("Confirmed gossip")
+		SelectGossipOption(index, "", true)
+		StaticPopup_Hide("GOSSIP_CONFIRM")
 	end
 end
 
@@ -465,9 +804,9 @@ end
 local ClickGossip = GossipTitleButton_OnClick
 function GossipTitleButton_OnClick(self, button, down)
 	local gossipText = self:GetText()
-	--print("clicking gossip", self:GetID(), gossipText)
+	--self:Debug("Clicking gossip", self:GetID(), gossipText)
 	if dismountForGossip[gossipText] then
-		--print("dismounting")
+		--self:Debug("Dismounting")
 		Dismount()
 	end
 	ClickGossip(self, button, down)

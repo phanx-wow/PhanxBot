@@ -39,8 +39,6 @@ if LOCALE == "deDE" then
 -- Isle of Quel'Danas
 	--L["I need to intercept the Dawnblade reinforcements."] = ""
 	--L["Speaking of action, I've been ordered to undertake an air strike."] = ""
--- Darkmoon Isle
-	L["Teleport me to the cannnon."] = "Teleportiert much zur Kanone."
 
 -- UI
 	L["Accept groups"] = "Gruppen annehmen"
@@ -51,6 +49,8 @@ if LOCALE == "deDE" then
 	L["Also accept resurrections in combat."] = "Wiederbelebungen auch im Kampf automatisch annehmen."
 	L["Accept summons"] = "Beschwörungen annehmen"
 	L["Accept summons from meeting stones and warlocks."] = "Beschwörungen von Hexenmeister und Versammlungssteine automatisch annehmen."
+	L["Automate quests"] = "Quests automatisieren"
+	L["Automatically accept and turn in quests."] = "Quests automatisch annehmen und abschließen."
 	L["Delay"] = "Wartezeit"
 	L["Wait this many seconds before accepting summons."] = "Festlegen, wie viele Sekunden vor der Annahme der Beschwörung zu warten."
 	L["Confirm disenchant rolls"] = "Entzauberungswürfe bestätigen"
@@ -65,17 +65,17 @@ if LOCALE == "deDE" then
 	L["...in groups"] = "...in Gruppen"
 	L["Also loot bind-on-pickup items without confirmation while in a group."] = "Auch BoP-Gegendstände ohne Bestätigung plündern, wenn Ihr in eine Gruppe seid."
 	L["Repair equipment"] = "Gegenstände reparieren"
-	L["Repair all equipment when interacting with a repair vendor."] = "Alle Gegenstände auf Interaktion mit einem Händler automatisch reparieren."
+	L["Repair all equipment when interacting with a repair vendor."] = "Alle Gegenstände bei Interaktion mit einem Händler automatisch reparieren."
 	L["...with guild bank money"] = "...bei Gildengeld"
 	L["Repair with money from the guild bank when available."] = "Bei Gildengeld repaieren, wenn möglich."
 	L["Sell junk"] = "Müll verkaufen"
-	L["Sell gray-quality items when interacting with a vendor."] = "Alle grauen Gegenstände auf die Interaktion mit einem Händler verkaufen."
+	L["Sell gray-quality items when interacting with a vendor."] = "Alle grauen Gegenstände bei Interaktion mit einem Händler verkaufen."
 	L["Skip gossip"] = "Tratsch übergehen"
 	L["Skip NPC gossip options if there's only one choice."] = "NPC-Tratsch übergehen, wenn es nur eine Option gibt."
 	L["Filter trainers"] = "Lehrer filtern"
-	L["Hide unavailable and already known skills at trainers by default."] = "Nicht verfügbar oder bereits bekannt Fertigkeiten bei Lehrer standardmäßig ausblenden."
+	L["Hide unavailable and already known skills at trainers by default."] = "Nicht verfügbare und bereits bekannte Fertigkeiten bei Lehrer standardmäßig ausblenden."
 	L["Show nameplates in combat"] = "Plaketten im Kampf einblenden"
-	L["Toggle enemy nameplates on when entering combat, and off when leaving combat."] = "Plaketten für Gegner einblenden am Anfang des Kampfes und ausblenden am Ende des Kampfes."
+	L["Toggle enemy nameplates on when entering combat, and off when leaving combat."] = "Gegnerplaketten am Anfang des Kampfes einblenden, und am Ende des Kampfes ausblenden."
 
 ------------------------------------------------------------------------
 end
