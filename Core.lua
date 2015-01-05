@@ -30,6 +30,10 @@ local ignoreGossip = {
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
 }
 
+local selectMultiGossip = {
+	[L["Teleport me to the cannon."]] = true, -- CHECK ENGLISH -- Darkmoon Isle, Teleportologist Fozlebub
+}
+
 local dismountForGossip = {
 	-- Pandaria
 	[L["I am ready to go."]] = true, -- CHECK ENGLISH -- Jade Forest, Fei, for "Es geht voran"
@@ -431,17 +435,27 @@ function Addon:GOSSIP_SHOW(event)
 	if IsShiftKeyDown() then return end
 
 	local _, instance = GetInstanceInfo()
-	if GetNumGossipAvailableQuests() == 0 and GetNumGossipActiveQuests() == 0 and GetNumGossipOptions() == 1 and instance ~= "raid" then
-		local gossipText, gossipType = GetGossipOptions()
-		if gossipType == "gossip" and not ignoreGossip[gossipText] and GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5 then
-			--print("selecting gossip \"" .. gossipText .. "\"")
-			gossipLastSeen[gossipText] = GetTime()
-			if dismountForGossip[gossipText] then
-				--print("dismounting")
-				Dismount()
+	if instance == "raid" or GetNumGossipAvailableQuests() > 0 or GetNumGossipActiveQuests() then return end
+
+	local numGossipOptions = GetNumGossipOptions()
+	local pickIndex, gossipText, gossipType = 1, GetGossipOptions()
+	if numGossipOptions > 1 then
+		for i = 1, numGossipOptions() do
+			local checkText, checkType = select(i * 2 - 1, GetGossipOptions())
+			if selectMultiGossip[gossipText] then
+				pickIndex, gossipText, gossipType = i, checkText, checkType
+				break
 			end
-			SelectGossipOption(1)
 		end
+	end
+	if gossipType == "gossip" and not ignoreGossip[gossipText] and GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5 then
+		--print("selecting gossip \"" .. gossipText .. "\"")
+		gossipLastSeen[gossipText] = GetTime()
+		if dismountForGossip[gossipText] then
+			--print("Dismounting")
+			Dismount()
+		end
+		SelectGossipOption(pickIndex)
 	end
 end
 

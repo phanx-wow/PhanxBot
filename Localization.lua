@@ -39,6 +39,8 @@ if LOCALE == "deDE" then
 -- Isle of Quel'Danas
 	--L["I need to intercept the Dawnblade reinforcements."] = ""
 	--L["Speaking of action, I've been ordered to undertake an air strike."] = ""
+-- Darkmoon Isle
+	L["Teleport me to the cannnon."] = "Teleportiert much zur Kanone."
 
 -- UI
 	L["Accept groups"] = "Gruppen annehmen"
