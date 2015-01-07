@@ -11,7 +11,6 @@
 ## SavedVariables: PhanxBotDB
 
 Libs\LibStub\LibStub.lua
-Libs\LibAboutPanel\LibAboutPanel.lua
 Libs\PhanxConfig-Checkbox\PhanxConfig-Checkbox.lua
 Libs\PhanxConfig-Header\PhanxConfig-Header.lua
 Libs\PhanxConfig-OptionsPanel\PhanxConfig-OptionsPanel.lua
