@@ -374,25 +374,21 @@ function Addon:QUEST_GREETING()
 	--self:Debug("QUEST_GREETING")
 	if ignoreQuestNPC[GetNPCID()] or IsShiftKeyDown() then return end
 	-- Turn in complete quests:
-	if self.db.turnin then
-		for i = 1, GetNumActiveQuests() do
-			local title, complete = GetActiveTitle(i)
-			--self:Debug("Checking active quest:", title)
-			if complete and not ignoreQuest[StripText(title)] then
-				--self:Debug("Select!")
-				SelectActiveQuest(i)
-			end
+	for i = 1, GetNumActiveQuests() do
+		local title, complete = GetActiveTitle(i)
+		--self:Debug("Checking active quest:", title)
+		if complete and not ignoreQuest[StripText(title)] then
+			--self:Debug("Select!")
+			SelectActiveQuest(i)
 		end
 	end
 	-- Pick up available quests:
-	if self.db.accept then
-		for i = 1, GetNumAvailableQuests() do
-			local title = StripText(GetAvailableTitle(i))
-			--self:Debug("Checking available quest:", title)
-			if not ignoreQuest[title] and (not IsAvailableQuestTrivial(i) or IsTrackingTrivial()) then
-				--self:Debug("Select!")
-				SelectAvailableQuest(i)
-			end
+	for i = 1, GetNumAvailableQuests() do
+		local title = StripText(GetAvailableTitle(i))
+		--self:Debug("Checking available quest:", title)
+		if not ignoreQuest[title] and (not IsAvailableQuestTrivial(i) or IsTrackingTrivial()) then
+			--self:Debug("Select!")
+			SelectAvailableQuest(i)
 		end
 	end
 end
