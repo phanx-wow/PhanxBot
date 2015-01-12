@@ -61,8 +61,8 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 		{
 			name = L["Decline guilds"],
 			desc = L["Decline invitations and petitions for guilds."],
-			get = function() return GetAutoDeclineGuildInvites() == 1 end,
-			set = function(value) SetAutoDeclineGuildInvites(value and 1 or 0) end,
+			get = function() return GetAutoDeclineGuildInvites() end,
+			set = function(value) SetAutoDeclineGuildInvites(value) end,
 		},
 		{
 			key = "lootBoP",
