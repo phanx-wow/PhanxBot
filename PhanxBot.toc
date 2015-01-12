@@ -7,14 +7,14 @@
 ## X-Email: addons@phanx.net
 ## X-Copyright: Copyright (c) 2008-2014 Phanx. All rights reserved.
 
-## OptionalDeps: LibAboutPanel, PhanxConfigWidgets
+## OptionalDeps: PhanxConfigWidgets
 ## SavedVariables: PhanxBotDB
 
-Libs\LibStub\LibStub.lua
-Libs\PhanxConfig-Checkbox\PhanxConfig-Checkbox.lua
-Libs\PhanxConfig-Header\PhanxConfig-Header.lua
-Libs\PhanxConfig-OptionsPanel\PhanxConfig-OptionsPanel.lua
-Libs\PhanxConfig-Slider\PhanxConfig-Slider.lua
+# Libs\LibStub\LibStub.lua
+# Libs\PhanxConfig-Checkbox\PhanxConfig-Checkbox.lua
+# Libs\PhanxConfig-Header\PhanxConfig-Header.lua
+# Libs\PhanxConfig-OptionsPanel\PhanxConfig-OptionsPanel.lua
+# Libs\PhanxConfig-Slider\PhanxConfig-Slider.lua
 
 Localization.lua
 Core.lua

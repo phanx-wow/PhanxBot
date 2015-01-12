@@ -28,12 +28,14 @@ local ignoreGossip = {
 	[L["I am ready to fly to Sholazar Basin."]] = true, -- CHECK ENGLISH
 	-- Outland
 	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
+	["Schick mich zur Ehreposten."] = true, -- CHECK ENGLISH
+	["Schick mich zum Trümmerposten."] = true, -- CHECK ENGLISH
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
 }
 
 local dismountForGossip = {
 	-- Pandaria
-	[L["I am ready to go."]] = true, -- CHECK ENGLISH -- Jade Forest, Fei, for "Es geht voran"
+	[L["I am ready to go."]] = true, -- CHECK ENGLISH -- Jade Forest, Fei, "Es geht voran"
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
 	[L["Send me to Dawn's Blossom."]] = true, -- CHECK ENGLISH
 	-- Northrend
@@ -46,6 +48,9 @@ local dismountForGossip = {
 	[L["Send me to the Abyssal Shelf!"]] = true,
 	[L["Send me to Thrallmar!"]] = true,
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
+	[19409] = true, -- Schwadronskommandant Dabir'ee: Schick mich zum Trümmerposten.
+	[20236] = true, -- Greifner Laubbart: Schick mich zum Trümmerposten.
+	[20235] = true, -- Greifnerin Heulwind: Schick mich zum Ehrenposten!
 	-- Isle of Quel'Danas
 	[L["I need to intercept the Dawnblade reinforcements."]] = true,
 	[L["Speaking of action, I've been ordered to undertake an air strike."]] = true,
@@ -114,10 +119,8 @@ local repeatableQuestComplete = {
 }
 
 local cashRewards = {
-	-- Keys are strings instead of numbers since it's coming from an item link,
-	-- and this way saves a call to tonumber.
-	["45724"] = 100000,  --  10g: Champion's Purse
-	["64491"] = 2000000, -- 200g: Royal Reward
+	[45724] = 100000,  --  10g: Champion's Purse
+	[64491] = 2000000, -- 200g: Royal Reward
 }
 
 local function GetNPCID()
@@ -299,9 +302,6 @@ function Addon:PLAYER_LOGIN()
 		self.Events:RegisterEvent("QUEST_COMPLETE")
 		self.Events:RegisterEvent("QUEST_FINISHED")
 		self.Events:RegisterEvent("QUEST_AUTOCOMPLETE")
-		QuestFrame:UnregisterEvent("QUEST_DETAIL")
-	else
-		QuestFrame:RegisterEvent("QUEST_DETAIL")
 	end
 
 	if db.confirmDisenchant then
@@ -398,12 +398,6 @@ function Addon:QUEST_DETAIL()
 	--self:Debug("QUEST_DETAIL")
 	if IsShiftKeyDown() then return end
 
-	if not QuestGetAutoAccept() or not QuestIsFromAreaTrigger() then
-		-- QuestFrame:UnregisterEvent("QUEST_DETAIL")
-		--self:Debug("Passing to QuestFrame")
-		QuestFrame_OnEvent(QuestFrame, "QUEST_DETAIL")
-	end
-
 	local giver = UnitName("questnpc")
 	local item, _, _, _, minLevel = GetItemInfo(giver or "")
 	if not item or not minLevel or minLevel > 1 or (UnitLevel("player") - minLevel < GetQuestGreenRange()) or IsTrackingTrivial() then
@@ -467,7 +461,7 @@ function Addon:QUEST_COMPLETE()
 			local link = GetQuestItemLink("choice", i)
 			if link then
 				local _, _, _, _, _, _, _, _, _, _, value = GetItemInfo(link)
-				value = cashRewards[strmatch(link, "item:(%d+)")] or value or 0
+				value = cashRewards[tonumber(strmatch(link, "item:(%d+)"))] or value or 0
 				if value > bestValue then
 					bestValue, bestIndex = value, i
 				end
@@ -777,7 +771,7 @@ function Addon:GOSSIP_SHOW(event)
 	if pickIndex then
 		--self:Debug("Selecting gossip \"" .. gossipText .. "\"")
 		gossipLastSeen[gossipText] = GetTime()
-		if dismountForGossip[gossipText] then
+		if dismountForGossip[npcID] or dismountForGossip[gossipText] then
 			--self:Debug("Dismounting")
 			Dismount()
 		end
