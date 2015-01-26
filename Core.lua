@@ -24,13 +24,6 @@ local ignoreGossip = {
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
 	-- Tillers
 	[L["What kind of gifts do you like?"]] = true,
-	-- Northrend
-	[L["I am ready to fly to Sholazar Basin."]] = true, -- CHECK ENGLISH
-	-- Outland
-	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
-	["Schick mich zur Ehreposten."] = true, -- CHECK ENGLISH
-	["Schick mich zum Trümmerposten."] = true, -- CHECK ENGLISH
-	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
 }
 
 local dismountForGossip = {
@@ -48,36 +41,36 @@ local dismountForGossip = {
 	[L["Send me to the Abyssal Shelf!"]] = true,
 	[L["Send me to Thrallmar!"]] = true,
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
-	[19409] = true, -- Schwadronskommandant Dabir'ee: Schick mich zum Trümmerposten.
-	[20236] = true, -- Greifner Laubbart: Schick mich zum Trümmerposten.
-	[20235] = true, -- Greifnerin Heulwind: Schick mich zum Ehrenposten!
+	[20235] = true, -- Schick mich zum Ehrenposten! @ Greifnerin Heulwind
+	[19409] = true, -- Schick mich zum Trümmerposten. @ Schwadronskommandant Dabir'ee
+	[20236] = true, -- Schick mich zum Trümmerposten. @ Greifner Laubbart
 	-- Isle of Quel'Danas
 	[L["I need to intercept the Dawnblade reinforcements."]] = true,
 	[L["Speaking of action, I've been ordered to undertake an air strike."]] = true,
 }
 
 local selectMultiGossip = {
-	[57850] = 1, -- Darkmoon Isle, Teleportologist Fozlebub, "Teleport me to the cannon."
+	[57850] = 1, -- Teleportologist Fozlebub, "Teleport me to the cannon."
 }
 
 local confirmGossipNPC = {
-	[57850] = true, -- Teleportologist Fozlebub
-	[55382] = true, -- Darkmoon Faire Mystic Mage (Horde)
 	[54334] = true, -- Darkmoon Faire Mystic Mage (Alliance)
+	[55382] = true, -- Darkmoon Faire Mystic Mage (Horde)
+	[57850] = true, -- Teleportologist Fozlebub
 }
 
 local ignoreGossipNPC = {
 	-- Bodyguards
 	[86945] = true, -- Aeda Brightdawn (Horde)
-	[86933] = true, -- Vivianne (Horde)
 	[86927] = true, -- Delvar Ironfist (Alliance)
 	[86934] = true, -- Defender Illona (Alliance)
-	[86682] = true, -- Tormmok
 	[86964] = true, -- Leorajh
 	[86946] = true, -- Talonpriest Ishaal
+	[86682] = true, -- Tormmok
+	[86933] = true, -- Vivianne (Horde)
 	-- Misc NPCs
-	[79740] = true, -- Warmaster Zog (Horde)
 	[79953] = true, -- Lieutenant Thorn (Alliance)
+	[79740] = true, -- Warmaster Zog (Horde)
 }
 
 local ignoreQuest = {
@@ -400,7 +393,7 @@ function Addon:QUEST_DETAIL()
 
 	local giver = UnitName("questnpc")
 	local item, _, _, _, minLevel = GetItemInfo(giver or "")
-	if not item or not minLevel or minLevel > 1 or (UnitLevel("player") - minLevel < GetQuestGreenRange()) or IsTrackingTrivial() then
+	if not item or not minLevel or minLevel < 2 or (UnitLevel("player") - minLevel < GetQuestGreenRange()) or IsTrackingTrivial() then
 		-- No way to get the quest level from the item, so if the item
 		-- doesn't have a level requirement, we just have to take it.
 		--self:Debug("Accepting quest %q from %s", StripText(GetTitleText()), giver)
@@ -765,7 +758,7 @@ function Addon:GOSSIP_SHOW(event)
 	if instanceType == "raid" or ignoreGossipNPC[npcID] or GetNumGossipAvailableQuests() > 0 or GetNumGossipActiveQuests() > 0 then return end
 
 	local pickIndex, gossipText, gossipType = selectMultiGossip[npcID], GetGossipOptions()
-	if not pickIndex and gossipType == "gossip" and not ignoreGossip[gossipText] and GetNumGossipOptions() == 1 and (GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5) then
+	if not pickIndex and gossipType == "gossip" and not ignoreGossip[gossipText] and not dismountForGossip[gossipText] and GetNumGossipOptions() == 1 and (GetTime() - (gossipLastSeen[gossipText] or 0) > 0.5) then
 		pickIndex = 1
 	end
 	if pickIndex then
