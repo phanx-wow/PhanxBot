@@ -141,7 +141,7 @@ Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(sel
 		widget.option = option
 		option.widget = widget
 
-		local y = (i > 1 and options[i-1].type == "range") and -16 or -8
+		local y = (i > 1 and options[i-1].type == "range") and -16 or (i > 1 and option.type == "range") and -12 or -8
 		if i == 1 then
 			widget:SetPoint("TOPLEFT", notes, "BOTTOMLEFT", 0, y)
 		elseif i == breakpoint then
