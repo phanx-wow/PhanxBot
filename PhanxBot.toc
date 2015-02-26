@@ -1,11 +1,11 @@
-## Interface: 60000
+## Interface: 60100
 
 ## Title: PhanxBot
 ## Notes: Does stuff for you.
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Copyright: Copyright (c) 2008-2014 Phanx. All rights reserved.
+## X-Copyright: Copyright (c) 2008-2015 Phanx. All rights reserved.
 
 ## OptionalDeps: PhanxConfigWidgets
 ## SavedVariables: PhanxBotDB
