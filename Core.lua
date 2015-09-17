@@ -105,10 +105,23 @@ local ignoreQuestNPC = {
 }
 
 local repeatableQuestComplete = {
-	-- Replenishing the Pantry
-	[31535] = function() return GetItemCount(87557) >= 1 end, -- Bundle of Groceries
-	-- Seeds of Fear
-	[31603] = function() return GetItemCount(87903) >= 6 end, -- Dread Amber Shards
+	-- {{ DRAENOR
+	[35147] = {118099,20}, -- Fragments of the Past -> 20 Gorian Artifact Fragment
+	[37125] = 118100, -- A Rare Find -> Highmaul Relic
+	[37210] = 118654, -- Aogexon's Fang
+	[37211] = 118655, -- Bergruu's Horn
+	[37221] = 118656, -- Dekorhan's Tusk
+	[37222] = 118657, -- Direhoof's Hide
+	[37223] = 118658, -- Gagrog's Skull
+	[37224] = 118659, -- Mu'gra's Head
+	[37225] = 118660, -- Thek'talon's Talon
+	[37226] = 118661, -- Xelganak's Stinger
+	[37520] = 120172, -- Vileclaw's Claw
+	-- }}
+	-- {{ PANDARIA
+	[31535] = 87557, -- Replenishing the Pantry -> Bundle of Groceries
+	[31603] = {87903,6}, -- Seeds of Fear -> 6 Dread Amber Shards
+	-- }}
 }
 
 local cashRewards = {
@@ -734,8 +747,13 @@ function Addon:GOSSIP_SHOW(event)
 			--self:Debug(i, '"'..title..'"', isLowLevel, isRepeatable)
 			if not ignoreQuest[title] then
 				local go
-				if isRepeatable and repeatableQuestComplete[title] then
-					go = repeatableQuestComplete[title]()
+				local req = isRepeatable and repeatableQuestComplete[title]
+				if req then
+					if type(req) == "number" then
+						go = GetItemCount(req) >= 1
+					else
+						go = GetItemCount(req[1]) >= req[2]
+					end
 					--self:Debug("Repeatable", go)
 				else
 					go = not isLowLevel or IsTrackingTrivial()
