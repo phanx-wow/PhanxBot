@@ -152,26 +152,17 @@ end
 
 local PopulateQuestNames
 do
-	local complete
-	local toPopulate = {
-		ignoreQuest,
-		repeatableQuestComplete,
-	}
+	local toPopulate = {}
+	for id in pairs(ignoreQuest) do toPopulate[id] = ignoreQuest end
+	for id in pairs(repeatableQuestComplete) do toPopulate[id] = repeatableQuestComplete end
+
 	function PopulateQuestNames()
-		if complete then return end
-		complete = true
-		for i = 1, #toPopulate do
-			local t = toPopulate[i]
-			for id, v in pairs(t) do
-				if type(id) == "number" then
-					local name = GetQuestName(id)
-					if name then
-						t[name] = v
-						t[id] = nil
-					else
-						complete = false
-					end
-				end
+		for id, t in pairs(toPopulate) do
+			local name = GetQuestName(id)
+			if name then
+				toPopulate[id] = nil
+				t[name] = t[id]
+				t[id] = nil
 			end
 		end
 	end
@@ -376,7 +367,7 @@ local function StripText(text)
 end
 
 function Addon:QUEST_GREETING()
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_GREETING")
 	if ignoreQuestNPC[GetNPCID()] or IsShiftKeyDown() then return end
 	-- Turn in complete quests:
@@ -400,7 +391,7 @@ function Addon:QUEST_GREETING()
 end
 
 function Addon:QUEST_DETAIL()
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_DETAIL")
 	if IsShiftKeyDown() then return end
 
@@ -415,7 +406,7 @@ function Addon:QUEST_DETAIL()
 end
 
 function Addon:QUEST_ACCEPT_CONFIRM(event, giver, quest)
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_ACCEPT_CONFIRM", giver, quest)
 	if IsShiftKeyDown() then return end
 	AcceptQuest()
@@ -424,7 +415,7 @@ function Addon:QUEST_ACCEPT_CONFIRM(event, giver, quest)
 end
 
 function Addon:QUEST_ACCEPTED(event, id)
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_ACCEPTED", id)
 	if QuestFrame:IsShown() and QuestGetAutoAccept() then
 		CloseQuest()
@@ -435,7 +426,7 @@ function Addon:QUEST_ACCEPTED(event, id)
 end
 
 function Addon:QUEST_PROGRESS()
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_PROGRESS")
 	if IsShiftKeyDown() or not IsQuestCompletable() then return end
 	--self:Debug("Completing quest", StripText(GetTitleText()))
@@ -443,7 +434,7 @@ function Addon:QUEST_PROGRESS()
 end
 
 function Addon:QUEST_ITEM_UPDATE()
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_ITEM_UPDATE", questChoicePending)
 	if questChoicePending then
 		self:QUEST_COMPLETE("QUEST_ITEM_UPDATE")
@@ -451,7 +442,7 @@ function Addon:QUEST_ITEM_UPDATE()
 end
 
 function Addon:QUEST_COMPLETE()
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	if not questChoicePending then
 		--self:Debug("QUEST_COMPLETE")
 		if IsShiftKeyDown() then return end
@@ -485,7 +476,7 @@ function Addon:QUEST_COMPLETE()
 end
 
 function Addon:QUEST_FINISHED()
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_FINISHED")
 	if questChoiceFinished then
 		questChoicePending = false
@@ -493,7 +484,7 @@ function Addon:QUEST_FINISHED()
 end
 
 function Addon:QUEST_AUTOCOMPLETE(event, id)
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Quest.enable then return end
 	--self:Debug("QUEST_AUTOCOMPLETE", id)
 	local index = GetQuestLogIndexByID(id)
 	if GetQuestLogIsAutoComplete(index) then
@@ -516,7 +507,7 @@ end
 --	Accept resurrections
 
 function Addon:RESURRECT_REQUEST(event, sender)
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Automation.acceptResurrections then return end
 	--self:Debug(event, sender)
 	local _, class = UnitClass(sender)
 	if class == "DRUID" and UnitAffectingCombat(sender) and not db.acceptResurrectionsInCombat then
@@ -575,7 +566,7 @@ do
 	end
 
 	function Addon:CONFIRM_SUMMON(event)
-		if HydraSettings then return end
+		if HydraSettings and HydraSettings.Quest.acceptSummons then return end
 		--self:Debug(event)
 		self:Print("Accepting summon in %d seconds...", db.summonDelay)
 
@@ -590,7 +581,7 @@ do
 	end
 
 	function Addon:PLAYER_DEAD()
-		if HydraSettings then return end
+		if HydraSettings and HydraSettings.Quest.acceptSummons then return end
 		--self:Debug(event)
 		self:CancelSummon()
 	end
@@ -631,7 +622,7 @@ end
 local duelCount = {}
 
 function Addon:DUEL_REQUESTED(event, sender)
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Automation.declineDuels then return end
 	duelCount[sender] = (duelCount[sender] or 0) + 1
 	--self:Debug(event, sender, duelCount)
 	CancelDuel()
@@ -669,7 +660,7 @@ end
 --	Repair equipment and sell junk items at vendors
 
 function Addon:MERCHANT_SHOW(event)
-	if HydraSettings then return end
+	if HydraSettings and HydraSettings.Automation.sellJunk then return end
 	--self:Debug(event)
 	if IsShiftKeyDown() then return end
 
@@ -732,7 +723,7 @@ function Addon:GOSSIP_SHOW(event)
 	--self:Debug(event)
 	if IsShiftKeyDown() then return end
 
-	if db.automateQuests and not HydraSettings then
+	if db.automateQuests and not (HydraSettings and HydraSettings.Quest.enable) then
 		-- Turn in complete quests:
 		for i = 1, GetNumGossipActiveQuests() do
 			local title, level, isLowLevel, isComplete, isLegendary = select(i * 5 - 4, GetGossipActiveQuests())
@@ -742,6 +733,7 @@ function Addon:GOSSIP_SHOW(event)
 			end
 		end
 		-- Pick up available quests:
+		PopulateQuestNames()
 		for i = 1, GetNumGossipAvailableQuests() do
 			local title, level, isLowLevel, isDaily, isRepeatable, isLegendary = select(i * 6 - 5, GetGossipAvailableQuests())
 			--self:Debug(i, '"'..title..'"', isLowLevel, isRepeatable)
@@ -805,9 +797,9 @@ end
 local ClickGossip = GossipTitleButton_OnClick
 function GossipTitleButton_OnClick(self, button, down)
 	local gossipText = self:GetText()
-	--self:Debug("Clicking gossip", self:GetID(), gossipText)
+	--Addon:Debug("Clicking gossip", self:GetID(), gossipText)
 	if dismountForGossip[gossipText] then
-		--self:Debug("Dismounting")
+		--Addon:Debug("Dismounting")
 		Dismount()
 	end
 	ClickGossip(self, button, down)
