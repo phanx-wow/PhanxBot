@@ -1,4 +1,4 @@
-## Interface: 60100
+## Interface: 60200
 
 ## Title: PhanxBot
 ## Notes: Does stuff for you.
@@ -17,5 +17,7 @@
 # Libs\PhanxConfig-Slider\PhanxConfig-Slider.lua
 
 Localization.lua
+QuestData.lua
+
 Core.lua
 Options.lua

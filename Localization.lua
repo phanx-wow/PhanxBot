@@ -10,37 +10,6 @@ local LOCALE = GetLocale()
 ------------------------------------------------------------------------
 
 if LOCALE == "deDE" then
--- Klaxxi
-	--L["Grant me your assistance, Bloodseeker. [Klaxxi Augmentation]"] = ""
-	--L["Grant me your assistance, Dissector. [Klaxxi Enhancement]"] = ""
-	--L["Grant me your assistance, Iyyokuk. [Klaxxi Enhancement]"] = ""
-	--L["Grant me your assistance, Locust. [Klaxxi Augmentation]"] = ""
-	--L["Grant me your assistance, Malik. [Klaxxi Enhancement]"] = ""
-	--L["Grant me your assistance, Manipulator. [Klaxxi Augmentation]"] = ""
-	--L["Grant me your assistance, Prime. [Klaxxi Augmentation]"] = ""
-	--L["Grant me your assistance, Wind-Reaver. [Klaxxi Enhancement]"] = ""
-	--L["Please fly me to the Terrace of Gurthan"] = ""
--- Tillers
-	--L["What kind of gifts do you like?"] = ""
--- Pandaria
-	L["I am ready to go."] = "Ich bin bereit zu gehen."
-	--L["Please fly me to the Terrace of Gurthan"] = ""
-	L["Send me to Dawn's Blossom."] = "Schickt mich nach Morgenblüte."
--- Northrend
-	L["I need a bat to intercept the Alliance reinforcements."] = "Ich brauche eine Reitfledermaus, um die Verstärkung der Allianz abzufangen."
-	L["I am ready to fly to Sholazar Basin."] = "Ich bin bereit, ins Sholazarbecken zu fliegen."
--- Outland
-	--L["Absolutely!  Send me to the Skyguard Outpost."] = ""
-	L["I'm on a bombing mission for Forward Command To'arch.  I need a wyvern destroyer!"] = "Ich habe einen Bomberauftrag von Vorpostenkommandant To'arch. Ich brauche einen Wyverzerstörer!"
-	L["Lend me a Windrider.  I'm going to Spinebreaker Post!"] = "Gebt mir ein Windreiter. Ich werde zum Rückenbrecherposten fliegen!"
-	L["Send me to the Abyssal Shelf!"] = "Schickt mich zur abyssischen Untiefe!"
-	L["Send me to Thrallmar!"] = "Schickt mich nach Thrallmar!"
-	--L["Yes, I'd love a ride to Blackwind Landing."] = ""
--- Isle of Quel'Danas
-	--L["I need to intercept the Dawnblade reinforcements."] = ""
-	--L["Speaking of action, I've been ordered to undertake an air strike."] = ""
-
--- UI
 	L["Accept groups"] = "Gruppen annehmen"
 	L["Accept group inviations from friends and guildmates."] = "Gruppeneinladungen von Freunde und Gildenmitglieder automatisch annehmen."
 	L["Accept resurrections"] = "Wiederbelebungen annehmen"
