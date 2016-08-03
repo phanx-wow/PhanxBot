@@ -27,7 +27,7 @@ private.GossipToIgnore = {
 
 private.GossipNeedsDismount = {
 	-- Pandaria
-	[L["I am ready to go."]] = true, -- Jade Forest, Fei, quest "Es geht voran" -- CHECK ENGLISH
+	[L["I am ready to leave."]] = true, -- Fei, Jade Forest
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
 	[L["Send me to Dawn's Blossom."]] = true, -- CHECK ENGLISH
 	-- Northrend
@@ -36,13 +36,13 @@ private.GossipNeedsDismount = {
 	-- Outland
 	[L["Absolutely!  Send me to the Skyguard Outpost."]] = true,
 	[L["I'm on a bombing mission for Forward Command To'arch.  I need a wyvern destroyer!"]] = true,
-	[L["Lend me a Windrider.  I'm going to Spinebreaker Post!"]] = true,
+	[L["Lend me a Windrider.  I'm going to Spinebreaker Post!"]] = true, -- Commander Brack, Reaver's Fall, Hellfire Peninsula
 	[L["Send me to the Abyssal Shelf!"]] = true,
 	[L["Send me to Thrallmar!"]] = true,
 	[L["Yes, I'd love a ride to Blackwind Landing."]] = true,
-	[L["Send me to Honor Post!"]] = true, -- Hellfire Peninusla, Gryphoneer Windbellow -- CHECK ENGLISH
-	[L["Send me to Shatter Point."]] = true, -- Hellfire Peninsula, Wing Command Dabir'ee -- CHECK ENGLISH
-	[L["Send me to Shatter Point."]] = true, -- Hellfire Peninusla, Gryphoneer Leafbeard -- CHECK ENGLISH
+	[L["Send me to Honor Post!"]] = true, -- Gryphoneer Windbellow, Hellfire Peninusla -- CHECK ENGLISH
+	[L["Send me to Shatter Point."]] = true, -- Wing Command Dabir'ee, Hellfire Peninusla -- CHECK ENGLISH
+	[L["Send me to Shatter Point."]] = true, -- Gryphoneer Leafbeard, Hellfire Peninusla -- CHECK ENGLISH
 	-- Isle of Quel'Danas
 	[L["I need to intercept the Dawnblade reinforcements."]] = true,
 	[L["Speaking of action, I've been ordered to undertake an air strike."]] = true,

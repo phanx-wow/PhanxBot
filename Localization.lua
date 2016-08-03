@@ -1,11 +1,18 @@
 --[[--------------------------------------------------------------------
 	PhanxBot
 	Reduces interface tedium by doing stuff for you.
-	Copyright (c) 2008-2015 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright (c) 2008-2016 Phanx <addons@phanx.net>. All rights reserved.
 ----------------------------------------------------------------------]]
 
-local L, ADDON, Addon = {}, ...
+local ADDON, Addon = ...
 local LOCALE = GetLocale()
+
+local L = {}
+Addon.L = setmetatable(L, { __index = function(t, k)
+	local v = tostring(k)
+	t[k] = v
+	return v end
+})
 
 ------------------------------------------------------------------------
 
@@ -45,12 +52,4 @@ if LOCALE == "deDE" then
 	L["Hide unavailable and already known skills at trainers by default."] = "Nicht verfügbare und bereits bekannte Fertigkeiten bei Lehrer standardmäßig ausblenden."
 	L["Show nameplates in combat"] = "Plaketten im Kampf einblenden"
 	L["Toggle enemy nameplates on when entering combat, and off when leaving combat."] = "Gegnerplaketten am Anfang des Kampfes einblenden, und am Ende des Kampfes ausblenden."
-
-------------------------------------------------------------------------
-end
-
-Addon.L = setmetatable(L, { __index = function(t, k)
-	local v = tostring(k)
-	t[k] = v
-	return v end
-})
+return end

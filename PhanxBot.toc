@@ -1,23 +1,23 @@
-## Interface: 60200
+## Interface: 70000
 
 ## Title: PhanxBot
 ## Notes: Does stuff for you.
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Copyright: Copyright (c) 2008-2015 Phanx. All rights reserved.
+## X-Copyright: Copyright (c) 2008-2016 Phanx. All rights reserved.
 
 ## OptionalDeps: PhanxConfigWidgets
 ## SavedVariables: PhanxBotDB
 
-# Libs\LibStub\LibStub.lua
-# Libs\PhanxConfig-Checkbox\PhanxConfig-Checkbox.lua
-# Libs\PhanxConfig-Header\PhanxConfig-Header.lua
-# Libs\PhanxConfig-OptionsPanel\PhanxConfig-OptionsPanel.lua
-# Libs\PhanxConfig-Slider\PhanxConfig-Slider.lua
+Libs\LibStub\LibStub.lua
+Libs\PhanxConfig-Checkbox\PhanxConfig-Checkbox.lua
+Libs\PhanxConfig-Header\PhanxConfig-Header.lua
+Libs\PhanxConfig-OptionsPanel\PhanxConfig-OptionsPanel.lua
+Libs\PhanxConfig-Slider\PhanxConfig-Slider.lua
 
 Localization.lua
-QuestData.lua
-
 Core.lua
+QuestData.lua
+Quest.lua
 Options.lua

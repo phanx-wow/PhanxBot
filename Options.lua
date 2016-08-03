@@ -1,14 +1,14 @@
 --[[--------------------------------------------------------------------
 	PhanxBot
 	Reduces interface tedium by doing stuff for you.
-	Copyright (c) 2008-2015 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright (c) 2008-2016 Phanx <addons@phanx.net>. All rights reserved.
 ----------------------------------------------------------------------]]
 
 local ADDON, Addon = ...
 
 Addon.Options = LibStub("PhanxConfig-OptionsPanel"):New(ADDON, nil, function(self)
 	local L = Addon.L
-	local db = PhanxBotDB
+	local db = Addon.db
 
 	local title, notes = self:CreateHeader(ADDON, GetAddOnMetadata(ADDON, "Notes"))
 
