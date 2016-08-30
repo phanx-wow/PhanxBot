@@ -27,7 +27,7 @@ private.GossipToIgnore = {
 
 private.GossipNeedsDismount = {
 	-- Pandaria
-	[L["I am ready to leave."]] = true, -- Fei, Jade Forest
+	[L["I am ready to leave."]] = true, -- Jade Forest, Fei
 	[L["Please fly me to the Terrace of Gurthan"]] = true,
 	[L["Send me to Dawn's Blossom."]] = true, -- CHECK ENGLISH
 	-- Northrend
