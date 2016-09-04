@@ -197,7 +197,7 @@ function Addon:GOSSIP_SHOW(event)
 	if self.db.automateQuests and not (HydraSettings and HydraSettings.Quest.enable) then
 		-- Turn in complete quests:
 		for i = 1, GetNumGossipActiveQuests() do
-			local title, level, isLowLevel, isComplete, isLegendary = select(i * 5 - 4, GetGossipActiveQuests())
+			local title, level, isLowLevel, isComplete, isLegendary, isIgnored = select(i * 6 - 5, GetGossipActiveQuests())
 			--self:Debug("ACTIVE:", i, '"'..title..'"', isLowLevel, isRepeatable)
 			if isComplete and not ignoreQuest[title] then
 				--self:Debug("Turn in:", title)
@@ -207,7 +207,7 @@ function Addon:GOSSIP_SHOW(event)
 		-- Pick up available quests:
 		Addon.LocalizeQuestNames()
 		for i = 1, GetNumGossipAvailableQuests() do
-			local title, level, isLowLevel, isDaily, isRepeatable, isLegendary = select(i * 6 - 5, GetGossipAvailableQuests())
+			local title, level, isLowLevel, isDaily, isRepeatable, isLegendary, isIgnored = select(i * 7 - 6, GetGossipAvailableQuests())
 			--self:Debug("AVAILALBLE:", i, '"'..title..'"', isLowLevel, isRepeatable)
 			if not ignoreQuest[title] then
 				local go
