@@ -181,13 +181,13 @@ end
 ------------------------------------------------------------------------
 --	Accept group invitations from friends
 
-function Addon:PARTY_INVITE_REQUEST(event, sender)
+function Addon:PARTY_INVITE_REQUEST(event, sender, ...)
 	--self:Debug(event, sender)
 	if IsFriend(sender) then
 		AcceptGroup()
 	else
 		SendWho("n-\"" .. sender .. "\"")
-		UIParent_OnEvent(UIParent, event, sender)
+		UIParent_OnEvent(UIParent, event, sender, ...)
 	end
 end
 
