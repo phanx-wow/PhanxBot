@@ -1,5 +1,13 @@
-local _, private = ...
+--[[--------------------------------------------------------------------
+	PhanxBot
+	Reduces interface tedium by doing stuff for you.
+	Copyright 2008-2018 Phanx <addons@phanx.net>
+	All rights reserved. Permission is granted to reuse code from
+	this addon in other projects, as long as my name is not used.
+----------------------------------------------------------------------]]
 -- This file contains useful data for gossip and quest automation
+
+local _, private = ...
 
 -- Localized strings are added at the bottom of this file
 local L = setmetatable({}, { __index = function(t, k) t[k] = k; return k end })

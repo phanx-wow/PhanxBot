@@ -1,8 +1,11 @@
 --[[--------------------------------------------------------------------
 	PhanxBot
 	Reduces interface tedium by doing stuff for you.
-	Copyright (c) 2008-2016 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright 2008-2018 Phanx <addons@phanx.net>
+	All rights reserved. Permission is granted to reuse code from
+	this addon in other projects, as long as my name is not used.
 ----------------------------------------------------------------------]]
+-- Thanks to Industrial, p3lim, and Tekkub for quest automation ideas
 
 local ADDON, Addon = ...
 local L = Addon.L

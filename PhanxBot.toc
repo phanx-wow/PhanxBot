@@ -1,11 +1,12 @@
-## Interface: 70100
+## Interface: 70300
 
 ## Title: PhanxBot
 ## Notes: Does stuff for you.
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Copyright: Copyright (c) 2008-2016 Phanx. All rights reserved.
+## X-License: All rights reserved
+## X-Website: https://github.com/phanx-wow/PhanxBot
 
 ## OptionalDeps: PhanxConfigWidgets
 ## SavedVariables: PhanxBotDB
